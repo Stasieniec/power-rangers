@@ -19,7 +19,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "seed:staging": "curl -s -X POST \"https://polymath.${CLOUDFLARE_SUBDOMAIN}.workers.dev/api/admin/seed?secret=${SEED_SECRET}\" | jq",
+    "seed:prod": "curl -s -X POST \"https://polymath-prod.${CLOUDFLARE_SUBDOMAIN}.workers.dev/api/admin/seed?secret=${SEED_SECRET}\" | jq"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
