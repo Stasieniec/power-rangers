@@ -21,7 +21,8 @@
     "format": "prettier --write .",
     "prepare": "husky",
     "seed:staging": "curl -s -X POST \"https://polymath.${CLOUDFLARE_SUBDOMAIN}.workers.dev/api/admin/seed?secret=${SEED_SECRET}\" | jq",
-    "seed:prod": "curl -s -X POST \"https://polymath-prod.${CLOUDFLARE_SUBDOMAIN}.workers.dev/api/admin/seed?secret=${SEED_SECRET}\" | jq"
+    "seed:prod": "curl -s -X POST \"https://polymath-prod.${CLOUDFLARE_SUBDOMAIN}.workers.dev/api/admin/seed?secret=${SEED_SECRET}\" | jq",
+    "warm-up:prod": "curl -s -X POST \"https://polymath-prod.${CLOUDFLARE_SUBDOMAIN}.workers.dev/api/admin/warm-up?secret=${SEED_SECRET}\" | jq"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

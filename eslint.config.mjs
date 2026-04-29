@@ -25,6 +25,8 @@ export default tseslint.config(
       "@typescript-eslint/consistent-type-imports": "error",
     },
   },
-  { ignores: [".next/**", "node_modules/**", "drizzle/**", ".open-next/**", "cloudflare-env.d.ts"] },
+  {
+    ignores: [".next/**", "node_modules/**", "drizzle/**", ".open-next/**", "cloudflare-env.d.ts"],
+  },
   prettier
 );
