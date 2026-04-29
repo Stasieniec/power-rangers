@@ -8,6 +8,7 @@ declare namespace Cloudflare {
     DB: D1Database;
     ASSETS: Fetcher;
     GEMINI_API_KEY: string;
+    OPENALEX_EMAIL: string;
     CLERK_SECRET_KEY: string;
     CLERK_WEBHOOK_SECRET: string;
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "REPLACE_WITH_PROD_CLERK_PK";
@@ -19,6 +20,7 @@ declare namespace Cloudflare {
     DB: D1Database;
     ASSETS: Fetcher;
     GEMINI_API_KEY: string;
+    OPENALEX_EMAIL: string;
     CLERK_SECRET_KEY: string;
     CLERK_WEBHOOK_SECRET: string;
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
