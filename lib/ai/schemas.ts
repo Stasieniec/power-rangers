@@ -25,9 +25,9 @@ export const researcherSummarySchema = z.object({
   expertise_tags: z.array(conceptSchema).min(1),
 });
 
-export const matchResultSchema = z.object({
-  match_score: z.number().int().min(0).max(100),
+export const matchRationaleSchema = z.object({
   rationale: z.string().min(20),
+  adjustment: z.number().int().min(-10).max(10),
   per_question_alignment: z.array(
     z.object({
       question_id: z.string(),
