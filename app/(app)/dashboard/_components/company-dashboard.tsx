@@ -44,7 +44,11 @@ export function CompanyDashboard({
                   <div>
                     <Link
                       href={
-                        p.status === "draft" ? `/projects/${p.id}/edit` : `/projects/${p.id}/manage`
+                        p.status === "draft"
+                          ? `/projects/${p.id}/edit`
+                          : p.status === "in_progress" || p.status === "completed"
+                            ? `/projects/${p.id}/dashboard`
+                            : `/projects/${p.id}/manage`
                       }
                       className="font-display hover:text-cyan text-xl"
                     >

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { Container } from "@/components/shell/container";
@@ -25,6 +26,14 @@ export default async function ManagePage({ params }: { params: Promise<{ id: str
         </p>
         <h1 className="font-display mt-3 text-4xl">{data.project.title}</h1>
         <p className="text-text-dim mt-2 font-mono text-sm">status: {data.project.status}</p>
+        {data.project.status === "in_progress" && (
+          <Link
+            href={`/projects/${data.project.id}/dashboard`}
+            className="text-cyan mt-3 inline-block hover:underline"
+          >
+            View alignment dashboard →
+          </Link>
+        )}
 
         <div className="mt-12 space-y-6">
           {data.applications.length === 0 ? (
