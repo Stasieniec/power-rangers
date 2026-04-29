@@ -16,7 +16,7 @@ binding = "ASSETS"
 [[d1_databases]]
 binding = "DB"
 database_name = "polymath-staging"
-database_id = "REPLACE_WITH_STAGING_DB_ID"
+database_id = "be1fdb90-57a7-4496-8119-54c83630f4b2"
 
 [[r2_buckets]]
 binding = "UPLOADS"
@@ -24,7 +24,7 @@ bucket_name = "polymath-staging-uploads"
 
 [[kv_namespaces]]
 binding = "KV"
-id = "REPLACE_WITH_STAGING_KV_ID"
+id = "b62573e6505445f691806dc2509a3d82"
 
 [env.production]
 name = "polymath-prod"
@@ -32,7 +32,7 @@ name = "polymath-prod"
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "polymath-prod"
-database_id = "REPLACE_WITH_PROD_DB_ID"
+database_id = "0918c81a-b9fc-43bb-8e74-62bdc54f6ffe"
 
 [[env.production.r2_buckets]]
 binding = "UPLOADS"
@@ -40,7 +40,7 @@ bucket_name = "polymath-prod-uploads"
 
 [[env.production.kv_namespaces]]
 binding = "KV"
-id = "REPLACE_WITH_PROD_KV_ID"
+id = "d15eed8198414f26aca2707b494b5beb"
 
 [vars]
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "REPLACE_WITH_STAGING_CLERK_PK"
