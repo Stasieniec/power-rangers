@@ -1,5 +1,7 @@
 import { generate } from "@/lib/ai/gemini";
 import { generatedQuestionsSchema } from "@/lib/ai/schemas";
+import { isFallbackMode } from "@/lib/ai/demo-mode";
+import { FALLBACK_QUESTIONS } from "@/lib/ai/demo-fallbacks/generate-questions";
 import type { z } from "zod";
 
 const SYSTEM = `You are a senior research strategist who turns business goals into precise, fundable research questions.
@@ -58,6 +60,7 @@ export type GenerateQuestionsOutput = z.infer<typeof generatedQuestionsSchema>;
 export async function generateQuestions(
   input: GenerateQuestionsInput
 ): Promise<GenerateQuestionsOutput> {
+  if (await isFallbackMode()) return FALLBACK_QUESTIONS;
   const prompt = `Project title: ${input.title}
 
 Business plan:

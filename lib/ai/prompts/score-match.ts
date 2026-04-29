@@ -1,5 +1,7 @@
 import { generate } from "@/lib/ai/gemini";
 import { matchRationaleSchema } from "@/lib/ai/schemas";
+import { isFallbackMode } from "@/lib/ai/demo-mode";
+import { FALLBACK_SCORE_MATCH } from "@/lib/ai/demo-fallbacks/score-match";
 import type { z } from "zod";
 
 const SYSTEM = `You are an evaluator for a research-team-to-project matching platform.
@@ -34,6 +36,7 @@ export interface ScoreMatchInput {
 export type ScoreMatchOutput = z.infer<typeof matchRationaleSchema>;
 
 export async function scoreMatchRationale(input: ScoreMatchInput): Promise<ScoreMatchOutput> {
+  if (await isFallbackMode()) return FALLBACK_SCORE_MATCH;
   const prompt = `BASE SCORE (concept-overlap, 0-100): ${String(input.baseScore)}
 
 RESEARCH QUESTIONS:

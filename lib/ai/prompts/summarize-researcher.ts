@@ -1,5 +1,7 @@
 import { generate } from "@/lib/ai/gemini";
 import { researcherSummarySchema } from "@/lib/ai/schemas";
+import { isFallbackMode } from "@/lib/ai/demo-mode";
+import { FALLBACK_SUMMARIZE } from "@/lib/ai/demo-fallbacks/summarize-researcher";
 import type { z } from "zod";
 
 const SYSTEM = `You are an expert science communicator. Given an author's publication concepts and the titles+abstracts of their most-cited recent papers, you produce a concise expertise profile that helps non-experts (business stakeholders) understand what this researcher is good at.
@@ -21,6 +23,7 @@ export interface SummarizeInput {
 export type SummarizeOutput = z.infer<typeof researcherSummarySchema>;
 
 export async function summarizeResearcher(input: SummarizeInput): Promise<SummarizeOutput> {
+  if (await isFallbackMode()) return FALLBACK_SUMMARIZE;
   const prompt = `Researcher: ${input.displayName}${
     input.affiliation ? ` (${input.affiliation})` : ""
   }

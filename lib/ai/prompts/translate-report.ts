@@ -1,5 +1,7 @@
 import { generate } from "@/lib/ai/gemini";
 import { reportFindingsSchema } from "@/lib/ai/schemas";
+import { isFallbackMode } from "@/lib/ai/demo-mode";
+import { FALLBACK_TRANSLATE } from "@/lib/ai/demo-fallbacks/translate-report";
 import type { z } from "zod";
 
 const SYSTEM = `You translate weekly research progress reports into business-language updates that map to specific research questions.
@@ -32,6 +34,7 @@ export interface TranslateReportInput {
 export type TranslateReportOutput = z.infer<typeof reportFindingsSchema>;
 
 export async function translateReport(input: TranslateReportInput): Promise<TranslateReportOutput> {
+  if (await isFallbackMode()) return FALLBACK_TRANSLATE;
   const prompt = `END-GOAL:
 ${input.endGoal}
 
