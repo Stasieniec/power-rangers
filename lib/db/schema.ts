@@ -1,8 +1,14 @@
 import { sql } from "drizzle-orm";
 import { sqliteTable, text, integer, real, index, uniqueIndex } from "drizzle-orm/sqlite-core";
 
-const ts = () => integer("created_at").notNull().default(sql`(unixepoch() * 1000)`);
-const updatedTs = () => integer("updated_at").notNull().default(sql`(unixepoch() * 1000)`);
+const ts = () =>
+  integer("created_at")
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`);
+const updatedTs = () =>
+  integer("updated_at")
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`);
 
 export const users = sqliteTable(
   "users",
@@ -15,15 +21,14 @@ export const users = sqliteTable(
     createdAt: ts(),
     updatedAt: updatedTs(),
   },
-  (t) => ({
-    clerkIdx: uniqueIndex("users_clerk_id_idx").on(t.clerkId),
-    emailIdx: index("users_email_idx").on(t.email),
-  })
+  (t) => [uniqueIndex("users_clerk_id_idx").on(t.clerkId), index("users_email_idx").on(t.email)]
 );
 
 export const companies = sqliteTable("companies", {
   id: text("id").primaryKey(),
-  ownerUserId: text("owner_user_id").notNull().references(() => users.id),
+  ownerUserId: text("owner_user_id")
+    .notNull()
+    .references(() => users.id),
   name: text("name").notNull(),
   description: text("description"),
   website: text("website"),
@@ -33,7 +38,9 @@ export const companies = sqliteTable("companies", {
 
 export const researchers = sqliteTable("researchers", {
   id: text("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id),
   openalexId: text("openalex_id"),
   orcid: text("orcid"),
   affiliation: text("affiliation"),
@@ -46,7 +53,9 @@ export const publications = sqliteTable(
   "publications",
   {
     id: text("id").primaryKey(),
-    researcherId: text("researcher_id").notNull().references(() => researchers.id),
+    researcherId: text("researcher_id")
+      .notNull()
+      .references(() => researchers.id),
     openalexWorkId: text("openalex_work_id"),
     title: text("title").notNull(),
     year: integer("year"),
@@ -56,30 +65,30 @@ export const publications = sqliteTable(
     doi: text("doi"),
     createdAt: ts(),
   },
-  (t) => ({
-    researcherIdx: index("publications_researcher_idx").on(t.researcherId),
-  })
+  (t) => [index("publications_researcher_idx").on(t.researcherId)]
 );
 
 export const researcherConcepts = sqliteTable(
   "researcher_concepts",
   {
     id: text("id").primaryKey(),
-    researcherId: text("researcher_id").notNull().references(() => researchers.id),
+    researcherId: text("researcher_id")
+      .notNull()
+      .references(() => researchers.id),
     concept: text("concept").notNull(),
     score: real("score").notNull(),
     createdAt: ts(),
   },
-  (t) => ({
-    researcherIdx: index("rc_researcher_idx").on(t.researcherId),
-  })
+  (t) => [index("rc_researcher_idx").on(t.researcherId)]
 );
 
 export const teams = sqliteTable("teams", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
-  createdByUserId: text("created_by_user_id").notNull().references(() => users.id),
+  createdByUserId: text("created_by_user_id")
+    .notNull()
+    .references(() => users.id),
   createdAt: ts(),
 });
 
@@ -87,39 +96,47 @@ export const teamMembers = sqliteTable(
   "team_members",
   {
     id: text("id").primaryKey(),
-    teamId: text("team_id").notNull().references(() => teams.id),
-    userId: text("user_id").notNull().references(() => users.id),
+    teamId: text("team_id")
+      .notNull()
+      .references(() => teams.id),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
     role: text("role", { enum: ["lead", "member"] }).notNull(),
-    joinedAt: integer("joined_at").notNull().default(sql`(unixepoch() * 1000)`),
+    joinedAt: integer("joined_at")
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
   },
-  (t) => ({
-    uniq: uniqueIndex("team_members_uniq").on(t.teamId, t.userId),
-    teamIdx: index("tm_team_idx").on(t.teamId),
-    userIdx: index("tm_user_idx").on(t.userId),
-  })
+  (t) => [
+    uniqueIndex("team_members_uniq").on(t.teamId, t.userId),
+    index("tm_team_idx").on(t.teamId),
+    index("tm_user_idx").on(t.userId),
+  ]
 );
 
 export const teamInvites = sqliteTable(
   "team_invites",
   {
     id: text("id").primaryKey(),
-    teamId: text("team_id").notNull().references(() => teams.id),
+    teamId: text("team_id")
+      .notNull()
+      .references(() => teams.id),
     code: text("code").notNull(),
     invitedEmail: text("invited_email"),
     expiresAt: integer("expires_at").notNull(),
     usedByUserId: text("used_by_user_id").references(() => users.id),
     createdAt: ts(),
   },
-  (t) => ({
-    codeIdx: uniqueIndex("team_invites_code_idx").on(t.code),
-  })
+  (t) => [uniqueIndex("team_invites_code_idx").on(t.code)]
 );
 
 export const projects = sqliteTable(
   "projects",
   {
     id: text("id").primaryKey(),
-    companyId: text("company_id").notNull().references(() => companies.id),
+    companyId: text("company_id")
+      .notNull()
+      .references(() => companies.id),
     title: text("title").notNull(),
     businessPlan: text("business_plan").notNull(),
     endGoal: text("end_goal").notNull(),
@@ -130,17 +147,16 @@ export const projects = sqliteTable(
     createdAt: ts(),
     updatedAt: updatedTs(),
   },
-  (t) => ({
-    companyIdx: index("projects_company_idx").on(t.companyId),
-    statusIdx: index("projects_status_idx").on(t.status),
-  })
+  (t) => [index("projects_company_idx").on(t.companyId), index("projects_status_idx").on(t.status)]
 );
 
 export const researchQuestions = sqliteTable(
   "research_questions",
   {
     id: text("id").primaryKey(),
-    projectId: text("project_id").notNull().references(() => projects.id),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id),
     question: text("question").notNull(),
     rationale: text("rationale").notNull(),
     orderIndex: integer("order_index").notNull(),
@@ -148,17 +164,19 @@ export const researchQuestions = sqliteTable(
     concepts: text("concepts").notNull().default("[]"), // JSON: [{label, weight}]
     createdAt: ts(),
   },
-  (t) => ({
-    projectIdx: index("rq_project_idx").on(t.projectId),
-  })
+  (t) => [index("rq_project_idx").on(t.projectId)]
 );
 
 export const applications = sqliteTable(
   "applications",
   {
     id: text("id").primaryKey(),
-    projectId: text("project_id").notNull().references(() => projects.id),
-    teamId: text("team_id").notNull().references(() => teams.id),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id),
+    teamId: text("team_id")
+      .notNull()
+      .references(() => teams.id),
     status: text("status", { enum: ["pending", "accepted", "rejected"] })
       .notNull()
       .default("pending"),
@@ -168,33 +186,39 @@ export const applications = sqliteTable(
     pitch: text("pitch").notNull(),
     createdAt: ts(),
   },
-  (t) => ({
-    uniq: uniqueIndex("apps_project_team_uniq").on(t.projectId, t.teamId),
-    projectIdx: index("apps_project_idx").on(t.projectId),
-  })
+  (t) => [
+    uniqueIndex("apps_project_team_uniq").on(t.projectId, t.teamId),
+    index("apps_project_idx").on(t.projectId),
+  ]
 );
 
 export const reports = sqliteTable(
   "reports",
   {
     id: text("id").primaryKey(),
-    projectId: text("project_id").notNull().references(() => projects.id),
-    teamId: text("team_id").notNull().references(() => teams.id),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id),
+    teamId: text("team_id")
+      .notNull()
+      .references(() => teams.id),
     weekOf: text("week_of").notNull(), // ISO date YYYY-MM-DD
     rawMarkdown: text("raw_markdown").notNull(),
-    submittedByUserId: text("submitted_by_user_id").notNull().references(() => users.id),
+    submittedByUserId: text("submitted_by_user_id")
+      .notNull()
+      .references(() => users.id),
     createdAt: ts(),
   },
-  (t) => ({
-    projectIdx: index("reports_project_idx").on(t.projectId),
-  })
+  (t) => [index("reports_project_idx").on(t.projectId)]
 );
 
 export const reportFindings = sqliteTable(
   "report_findings",
   {
     id: text("id").primaryKey(),
-    reportId: text("report_id").notNull().references(() => reports.id),
+    reportId: text("report_id")
+      .notNull()
+      .references(() => reports.id),
     researchQuestionId: text("research_question_id")
       .notNull()
       .references(() => researchQuestions.id),
@@ -203,14 +227,14 @@ export const reportFindings = sqliteTable(
     impactNote: text("impact_note").notNull(),
     createdAt: ts(),
   },
-  (t) => ({
-    reportIdx: index("rf_report_idx").on(t.reportId),
-  })
+  (t) => [index("rf_report_idx").on(t.reportId)]
 );
 
 export const reportFiles = sqliteTable("report_files", {
   id: text("id").primaryKey(),
-  reportId: text("report_id").notNull().references(() => reports.id),
+  reportId: text("report_id")
+    .notNull()
+    .references(() => reports.id),
   r2Key: text("r2_key").notNull(),
   filename: text("filename").notNull(),
   size: integer("size").notNull(),

@@ -44,6 +44,7 @@ tests/lib/ai/prompts/
 ## Task 1: OpenAlex types + client (with KV cache)
 
 **Files:**
+
 - Create: `lib/openalex/types.ts`, `lib/openalex/client.ts`, `tests/lib/openalex/client.test.ts`
 
 - [ ] **Step 1: Create `lib/openalex/types.ts`**
@@ -163,7 +164,18 @@ describe("fetchAuthorByName", () => {
   it("filters by name + affiliation", async () => {
     const fetchImpl = vi.fn(async (url: string | URL | Request) => {
       expect(String(url)).toContain("search=");
-      return ok({ results: [{ id: "A2", display_name: "X", orcid: null, works_count: 1, cited_by_count: 1, x_concepts: [] }] });
+      return ok({
+        results: [
+          {
+            id: "A2",
+            display_name: "X",
+            orcid: null,
+            works_count: 1,
+            cited_by_count: 1,
+            x_concepts: [],
+          },
+        ],
+      });
     });
     const out = await fetchAuthorByName("Jane Doe", "Stanford", {
       fetchImpl: fetchImpl as unknown as typeof fetch,
@@ -178,7 +190,19 @@ describe("fetchAuthorWorks", () => {
   it("calls works endpoint with author filter", async () => {
     const fetchImpl = vi.fn(async (url: string | URL | Request) => {
       expect(String(url)).toContain("filter=author.id:A1");
-      return ok({ results: [{ id: "W1", title: "Paper", display_name: "Paper", publication_year: 2024, cited_by_count: 5, doi: null, abstract_inverted_index: null }] });
+      return ok({
+        results: [
+          {
+            id: "W1",
+            title: "Paper",
+            display_name: "Paper",
+            publication_year: 2024,
+            cited_by_count: 5,
+            doi: null,
+            abstract_inverted_index: null,
+          },
+        ],
+      });
     });
     const out = await fetchAuthorWorks("A1", 5, {
       fetchImpl: fetchImpl as unknown as typeof fetch,
@@ -212,12 +236,7 @@ Expected: FAIL with module-not-found.
 - [ ] **Step 4: Create `lib/openalex/client.ts`**
 
 ```typescript
-import type {
-  OAAuthor,
-  OAAuthorsResponse,
-  OAWork,
-  OAWorksResponse,
-} from "./types";
+import type { OAAuthor, OAAuthorsResponse, OAWork, OAWorksResponse } from "./types";
 
 interface Opts {
   fetchImpl?: typeof fetch;
@@ -246,10 +265,7 @@ async function getCached<T>(
   return fresh;
 }
 
-export async function fetchAuthorByOrcid(
-  orcid: string,
-  opts: Opts
-): Promise<OAAuthor | null> {
+export async function fetchAuthorByOrcid(orcid: string, opts: Opts): Promise<OAAuthor | null> {
   const fetchImpl = opts.fetchImpl ?? fetch;
   const ttl = opts.ttlSeconds ?? DEFAULT_TTL;
   const key = `oa:author:orcid:${orcid}`;
@@ -303,9 +319,7 @@ export async function fetchAuthorWorks(
   });
 }
 
-export function reconstructAbstract(
-  inv: Record<string, number[]> | null
-): string | null {
+export function reconstructAbstract(inv: Record<string, number[]> | null): string | null {
   if (!inv) return null;
   const positions: { word: string; pos: number }[] = [];
   for (const [word, posList] of Object.entries(inv)) {
@@ -336,6 +350,7 @@ git commit -m "feat(openalex): add typed OpenAlex client with KV cache + tests"
 ## Task 2: Demo researcher fallback list
 
 **Files:**
+
 - Create: `lib/openalex/demo-researchers.ts`
 
 - [ ] **Step 1: Create `lib/openalex/demo-researchers.ts`**
@@ -381,6 +396,7 @@ git commit -m "feat(openalex): add demo researcher fallback list"
 ## Task 3: AI-2 prompt + integration
 
 **Files:**
+
 - Create: `lib/ai/prompts/summarize-researcher.ts`, `tests/lib/ai/prompts/summarize-researcher.test.ts`
 
 - [ ] **Step 1: Create the prompt module**
@@ -408,15 +424,16 @@ export interface SummarizeInput {
 
 export type SummarizeOutput = z.infer<typeof researcherSummarySchema>;
 
-export async function summarizeResearcher(
-  input: SummarizeInput
-): Promise<SummarizeOutput> {
+export async function summarizeResearcher(input: SummarizeInput): Promise<SummarizeOutput> {
   const prompt = `Researcher: ${input.displayName}${
     input.affiliation ? ` (${input.affiliation})` : ""
   }
 
 Top OpenAlex concepts (label, score):
-${input.concepts.slice(0, 20).map((c) => `- ${c.label}: ${c.weight.toFixed(2)}`).join("\n")}
+${input.concepts
+  .slice(0, 20)
+  .map((c) => `- ${c.label}: ${c.weight.toFixed(2)}`)
+  .join("\n")}
 
 Top publications:
 ${input.topPublications
@@ -467,7 +484,10 @@ describe("summarizeResearcher", () => {
     });
     expect(out.headline).toContain("Probabilistic");
     expect(generate).toHaveBeenCalledOnce();
-    const callArg = (generate as unknown as { mock: { calls: unknown[][] } }).mock.calls[0]![1] as { system: string; prompt: string };
+    const callArg = (generate as unknown as { mock: { calls: unknown[][] } }).mock.calls[0]![1] as {
+      system: string;
+      prompt: string;
+    };
     expect(callArg.system).toContain("expertise profile");
     expect(callArg.prompt).toContain("Daphne Koller");
     expect(callArg.prompt).toContain("Insitro");
@@ -495,6 +515,7 @@ git commit -m "feat(ai): add summarizeResearcher (AI-2) prompt + test"
 ## Task 4: Onboarding server action
 
 **Files:**
+
 - Create: `lib/actions/onboard.ts`
 
 - [ ] **Step 1: Create `lib/actions/onboard.ts`**
@@ -509,11 +530,7 @@ import { redirect } from "next/navigation";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb } from "@/lib/db/client";
 import { syncUser } from "@/lib/auth/sync-user";
-import {
-  researchers,
-  publications,
-  researcherConcepts,
-} from "@/lib/db/schema";
+import { researchers, publications, researcherConcepts } from "@/lib/db/schema";
 import {
   fetchAuthorByOrcid,
   fetchAuthorByName,
@@ -528,9 +545,7 @@ interface OnboardInput {
   affiliation?: string;
 }
 
-export type OnboardResult =
-  | { ok: true; researcherId: string }
-  | { ok: false; error: string };
+export type OnboardResult = { ok: true; researcherId: string } | { ok: false; error: string };
 
 export async function onboardResearcher(input: OnboardInput): Promise<OnboardResult> {
   const { userId: clerkId } = await auth();
@@ -584,8 +599,7 @@ export async function onboardResearcher(input: OnboardInput): Promise<OnboardRes
       userId: user.id,
       openalexId: author.id,
       orcid: author.orcid ?? input.orcid ?? null,
-      affiliation:
-        author.last_known_institution?.display_name ?? input.affiliation ?? null,
+      affiliation: author.last_known_institution?.display_name ?? input.affiliation ?? null,
       headline: summary.headline,
       aiSummary: summary.summary,
     });
@@ -595,18 +609,13 @@ export async function onboardResearcher(input: OnboardInput): Promise<OnboardRes
       .set({
         openalexId: author.id,
         orcid: author.orcid ?? input.orcid ?? null,
-        affiliation:
-          author.last_known_institution?.display_name ?? input.affiliation ?? null,
+        affiliation: author.last_known_institution?.display_name ?? input.affiliation ?? null,
         headline: summary.headline,
         aiSummary: summary.summary,
       })
       .where(eq(researchers.id, researcherId));
-    await db
-      .delete(publications)
-      .where(eq(publications.researcherId, researcherId));
-    await db
-      .delete(researcherConcepts)
-      .where(eq(researcherConcepts.researcherId, researcherId));
+    await db.delete(publications).where(eq(publications.researcherId, researcherId));
+    await db.delete(researcherConcepts).where(eq(researcherConcepts.researcherId, researcherId));
   }
 
   if (works.length > 0) {
@@ -653,6 +662,7 @@ git commit -m "feat(onboard): add server action wiring OpenAlex + AI-2 + DB"
 ## Task 5: Onboarding UI — input form
 
 **Files:**
+
 - Create: `app/(app)/onboard/page.tsx`, `app/(app)/onboard/_components/orcid-form.tsx`, `app/(app)/onboard/_components/demo-picker.tsx`, `app/(app)/layout.tsx`
 
 - [ ] **Step 1: Create authenticated layout**
@@ -966,6 +976,7 @@ pnpm deploy:staging
 ```
 
 Sign up as a researcher, land on `/onboard`. Click a demo researcher. Verify:
+
 - Loading skeleton shows "Fetching…" then "Analyzing…".
 - Success card appears with link to `/researchers/<id>`.
 - Visit the profile — publications, expertise tags, AI summary all render.
@@ -983,6 +994,7 @@ git commit -m "feat(onboard): build /onboard flow with ORCID + demo + AI-2"
 ## Task 6: Researcher dashboard skeleton
 
 **Files:**
+
 - Modify: `app/(app)/dashboard/page.tsx`
 - Create: `lib/db/queries/dashboard.ts`
 

@@ -40,6 +40,7 @@ components/team/
 ## Task 1: Team-creation server action
 
 **Files:**
+
 - Create: `lib/actions/teams.ts`
 
 - [ ] **Step 1: Install nanoid**
@@ -73,8 +74,7 @@ export async function createTeam(input: {
   if (!userId) return { ok: false, error: "not signed in" };
   const clerkUser = await currentUser();
   const user = await syncUser(clerkUser!);
-  if (user.role !== "researcher")
-    return { ok: false, error: "only researchers can create teams" };
+  if (user.role !== "researcher") return { ok: false, error: "only researchers can create teams" };
 
   const db = getDb();
   const teamId = uuidv7();
@@ -164,6 +164,7 @@ git commit -m "feat(teams): add createTeam, createInvite, revokeInvite actions"
 ## Task 2: `/teams/new` page
 
 **Files:**
+
 - Create: `app/(app)/teams/new/page.tsx`, `app/(app)/teams/new/_components/create-team-form.tsx`
 
 - [ ] **Step 1: Create the form component**
@@ -288,6 +289,7 @@ git commit -m "feat(teams): add /teams/new page"
 ## Task 3: `/teams/[id]/manage` page (lead-only)
 
 **Files:**
+
 - Create: `lib/db/queries/team-manage.ts`, `app/(app)/teams/[id]/manage/page.tsx`, `app/(app)/teams/[id]/manage/_components/invite-link-card.tsx`, `app/(app)/teams/[id]/manage/_components/member-list.tsx`
 
 - [ ] **Step 1: Create query helper**
@@ -297,13 +299,7 @@ git commit -m "feat(teams): add /teams/new page"
 ```typescript
 import { eq, and, gt, isNull } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
-import {
-  teams,
-  teamMembers,
-  teamInvites,
-  users,
-  researchers,
-} from "@/lib/db/schema";
+import { teams, teamMembers, teamInvites, users, researchers } from "@/lib/db/schema";
 
 export async function getTeamForManage(teamId: string, userId: string) {
   const db = getDb();
@@ -577,6 +573,7 @@ git commit -m "feat(teams): add /teams/[id]/manage with invites + members"
 ## Task 4: Invite acceptance flow
 
 **Files:**
+
 - Create: `lib/actions/invites.ts`, `app/invite/[code]/page.tsx`, `app/invite/[code]/_components/accept-button.tsx`
 
 - [ ] **Step 1: Create `lib/actions/invites.ts`**
@@ -609,21 +606,15 @@ export async function acceptInvite(
     where: eq(teamInvites.code, code),
   });
   if (!invite) return { ok: false, error: "invite not found" };
-  if (invite.expiresAt < Date.now())
-    return { ok: false, error: "invite expired" };
-  if (invite.usedByUserId)
-    return { ok: false, error: "invite already used" };
+  if (invite.expiresAt < Date.now()) return { ok: false, error: "invite expired" };
+  if (invite.usedByUserId) return { ok: false, error: "invite already used" };
 
   const existing = await db.query.teamMembers.findFirst({
-    where: and(
-      eq(teamMembers.teamId, invite.teamId),
-      eq(teamMembers.userId, user.id)
-    ),
+    where: and(eq(teamMembers.teamId, invite.teamId), eq(teamMembers.userId, user.id)),
   });
   if (existing) return { ok: true, teamId: invite.teamId };
 
-  if (user.role !== "researcher")
-    return { ok: false, error: "only researchers can join teams" };
+  if (user.role !== "researcher") return { ok: false, error: "only researchers can join teams" };
 
   await db.insert(teamMembers).values({
     id: uuidv7(),
@@ -631,10 +622,7 @@ export async function acceptInvite(
     userId: user.id,
     role: "member",
   });
-  await db
-    .update(teamInvites)
-    .set({ usedByUserId: user.id })
-    .where(eq(teamInvites.id, invite.id));
+  await db.update(teamInvites).set({ usedByUserId: user.id }).where(eq(teamInvites.id, invite.id));
   revalidatePath(`/teams/${invite.teamId}`);
   revalidatePath(`/teams/${invite.teamId}/manage`);
 
@@ -761,6 +749,7 @@ export default async function InvitePage({
 - [ ] **Step 4: Smoke-test end-to-end**
 
 Deploy to staging. With two browsers (signed in as two different researchers):
+
 1. Browser A: `/teams/new` → create "Convex Lab" → land on `/teams/<id>/manage` → click "+ New invite" → copy the link.
 2. Browser B: open the link → see "You're invited" page → click Accept → redirect to `/teams/<id>`.
 3. Refresh Browser A's manage page → see Browser B as a member; the invite is gone.
@@ -779,6 +768,7 @@ git commit -m "feat(invites): add /invite/[code] accept flow"
 The public team page already shows aggregate expertise (Plan 1 Task 6). Validate it renders with multi-member data.
 
 **Files:**
+
 - (validation only, no new files)
 
 - [ ] **Step 1: Verify with seeded data**

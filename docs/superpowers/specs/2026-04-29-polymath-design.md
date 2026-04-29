@@ -26,32 +26,32 @@
 
 **Hackathon judging targets:**
 
-| Criterion | Points | How we earn |
-|---|---|---|
-| Innovation & Ingenuity | 30 | Four creative AI moments, real concept-overlap math under the matching rationale, bidirectional translation as the platform's thesis |
-| Technical Implementation | 30 | Cloudflare-native stack (Workers + D1 + R2 + KV), live OpenAlex integration, typed end-to-end, real signal feeding AI rationale |
-| Impact & Utility | 20 | Cross-environment integration with OpenAlex; a real workflow companies and researchers could use |
-| Quality of Communication | 20 | Editorial visual identity, polished demo script, the platform itself reads professionally |
+| Criterion                | Points | How we earn                                                                                                                          |
+| ------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Innovation & Ingenuity   | 30     | Four creative AI moments, real concept-overlap math under the matching rationale, bidirectional translation as the platform's thesis |
+| Technical Implementation | 30     | Cloudflare-native stack (Workers + D1 + R2 + KV), live OpenAlex integration, typed end-to-end, real signal feeding AI rationale      |
+| Impact & Utility         | 20     | Cross-environment integration with OpenAlex; a real workflow companies and researchers could use                                     |
+| Quality of Communication | 20     | Editorial visual identity, polished demo script, the platform itself reads professionally                                            |
 
 ---
 
 ## 2. Tech stack
 
-| Concern | Pick |
-|---|---|
-| Framework | Next.js 15 (App Router, RSC, server actions) |
-| Runtime | Cloudflare Workers via `@opennextjs/cloudflare` |
-| Language | TypeScript (strict, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`) |
-| Styling | Tailwind v4 (CSS-first, `@theme` block) |
-| UI primitives | shadcn/ui (overrides committed in `components/ui/*`) |
-| Database | Cloudflare D1 (SQLite) via Drizzle ORM |
-| Object storage | Cloudflare R2 (logos, report attachments) |
-| Cache | Cloudflare KV (OpenAlex responses, AI idempotency) |
-| Auth | Clerk (`@clerk/nextjs` middleware) |
-| AI | Gemini 3 Flash (REST from Workers, JSON response mode) |
-| Validation | Zod (forms, AI outputs, API boundaries) |
-| External data | OpenAlex API (publications, concepts) |
-| Package manager | pnpm |
+| Concern         | Pick                                                                          |
+| --------------- | ----------------------------------------------------------------------------- |
+| Framework       | Next.js 15 (App Router, RSC, server actions)                                  |
+| Runtime         | Cloudflare Workers via `@opennextjs/cloudflare`                               |
+| Language        | TypeScript (strict, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`) |
+| Styling         | Tailwind v4 (CSS-first, `@theme` block)                                       |
+| UI primitives   | shadcn/ui (overrides committed in `components/ui/*`)                          |
+| Database        | Cloudflare D1 (SQLite) via Drizzle ORM                                        |
+| Object storage  | Cloudflare R2 (logos, report attachments)                                     |
+| Cache           | Cloudflare KV (OpenAlex responses, AI idempotency)                            |
+| Auth            | Clerk (`@clerk/nextjs` middleware)                                            |
+| AI              | Gemini 3 Flash (REST from Workers, JSON response mode)                        |
+| Validation      | Zod (forms, AI outputs, API boundaries)                                       |
+| External data   | OpenAlex API (publications, concepts)                                         |
+| Package manager | pnpm                                                                          |
 
 **Architecture:** single Next.js app deployed to Workers. All AI calls happen server-side from server actions. D1/R2/KV accessed via Workers bindings. No separate API service.
 
@@ -159,6 +159,7 @@ All four moments call Gemini 3 Flash via a single wrapper (`lib/ai/gemini.ts`) t
 Two stitched pieces, both visible during the demo:
 
 **2a — OpenAlex fetch:**
+
 - Input: ORCID (preferred) or `(name + affiliation)`.
 - `GET https://api.openalex.org/authors?filter=orcid:<orcid>` (or full-text search).
 - Pull last ~20 works via `/works?filter=author.id:<oa-id>&per-page=20&sort=publication_date:desc`.
@@ -166,6 +167,7 @@ Two stitched pieces, both visible during the demo:
 - Polite-pool header: `mailto:<OPENALEX_EMAIL>`.
 
 **2b — Gemini summarization:**
+
 - Input: author's concept list (already weighted by OpenAlex) + top 5 publication titles/abstracts.
 - Output: `{headline: string, summary: string, expertise_tags: [{label, weight}]}`.
 - Headline → profile header. Summary → tooltip/profile body. Tags → matching signal.
@@ -183,7 +185,7 @@ Two stitched pieces, both visible during the demo:
   - This produces a base score 0-100.
   - Gemini is given the base score + the data and writes the rationale, can adjust ±10 with justification (e.g. "the team's pitch addresses the methodological gap not visible in their publications").
   - Final score = clamp(base ± Gemini adjustment, 0, 100).
-- **Why this matters for judges:** the AI is *explaining real signal*, not generating a vibes-based number. Solid Innovation + Technical points.
+- **Why this matters for judges:** the AI is _explaining real signal_, not generating a vibes-based number. Solid Innovation + Technical points.
 - **UX:** scoring at submit (synchronous, ~6s with skeleton). Rendered on `/projects/[id]/manage` cards.
 
 ### AI-4: Weekly report → business translation (Pillar 3)
@@ -210,16 +212,19 @@ Two stitched pieces, both visible during the demo:
 ### Seeded fixtures (loaded by `pnpm db:seed`)
 
 **Companies:**
+
 - `MedScan Diagnostics` — pre-onboarded. Owns two projects:
   - **P1: "Late-stage clinical trial outcome prediction"** (`status: open`). AI research questions pre-generated. Two competing applications already submitted by seeded teams (with real match scores).
   - **P2: "Patient drop-off risk modeling"** (`status: in_progress`). Accepted team `BioFlux Lab`. Three weekly reports already submitted with translation cards rendered.
 
 **Researchers (Clerk accounts pre-created):**
+
 - `Alice Lead` — account exists, `/onboard` deliberately not completed (we run it live).
 - `Bob Member` — fully onboarded with real ORCID, on Convex Lab.
 - 4 others populating competing teams + BioFlux Lab. All real ORCIDs, all profiles fetched at seed time and frozen.
 
 **Teams:**
+
 - `Convex Lab` (Alice + Bob) — applies to P1 live.
 - `Lattice Sciences`, `Helix Group` — pre-applied to P1.
 - `BioFlux Lab` — accepted on P2.
@@ -228,20 +233,20 @@ Two stitched pieces, both visible during the demo:
 
 ### Demo script (3:30)
 
-| Time | Screen | What happens | Live AI |
-|---|---|---|---|
-| 0:00 | `/` | 10s positioning | — |
-| 0:10 | Sign in as Alice → `/onboard` | Paste ORCID (or "demo researcher") | **Hero B** |
-| 0:50 | `/teams/convex-lab` | Show team with Bob, aggregate expertise | — |
-| 1:00 | `/projects/p1` | Browse to MedScan's project, read AI questions | — |
-| 1:25 | `/projects/p1/apply` | Submit pitch | **Hero D** (match score) |
-| 1:55 | Switch to MedScan window | Already on dashboard | — |
-| 2:00 | `/projects/new` | Paste different business plan → questions | **Hero A** |
-| 2:30 | `/projects/p1/manage` | See 3 applications, Convex Lab on top | — |
-| 2:50 | Accept Convex Lab | — | — |
-| 3:00 | `/projects/p2/dashboard` | Show prior translation cards | — |
-| 3:20 | (optional) submit 4th report on P2 | Cards animate in | **Pillar C** |
-| 3:30 | Wrap | "Three pillars, four AI moments, real publications." | — |
+| Time | Screen                             | What happens                                         | Live AI                  |
+| ---- | ---------------------------------- | ---------------------------------------------------- | ------------------------ |
+| 0:00 | `/`                                | 10s positioning                                      | —                        |
+| 0:10 | Sign in as Alice → `/onboard`      | Paste ORCID (or "demo researcher")                   | **Hero B**               |
+| 0:50 | `/teams/convex-lab`                | Show team with Bob, aggregate expertise              | —                        |
+| 1:00 | `/projects/p1`                     | Browse to MedScan's project, read AI questions       | —                        |
+| 1:25 | `/projects/p1/apply`               | Submit pitch                                         | **Hero D** (match score) |
+| 1:55 | Switch to MedScan window           | Already on dashboard                                 | —                        |
+| 2:00 | `/projects/new`                    | Paste different business plan → questions            | **Hero A**               |
+| 2:30 | `/projects/p1/manage`              | See 3 applications, Convex Lab on top                | —                        |
+| 2:50 | Accept Convex Lab                  | —                                                    | —                        |
+| 3:00 | `/projects/p2/dashboard`           | Show prior translation cards                         | —                        |
+| 3:20 | (optional) submit 4th report on P2 | Cards animate in                                     | **Pillar C**             |
+| 3:30 | Wrap                               | "Three pillars, four AI moments, real publications." | —                        |
 
 ### Pre-baked vs live
 
@@ -257,7 +262,7 @@ Two stitched pieces, both visible during the demo:
 
 ## 7. Visual system
 
-Editorial polish on a modern-tech chassis. *Linear × Stripe Press × an arXiv preprint.*
+Editorial polish on a modern-tech chassis. _Linear × Stripe Press × an arXiv preprint._
 
 ### Typography
 
@@ -266,6 +271,7 @@ Editorial polish on a modern-tech chassis. *Linear × Stripe Press × an arXiv p
 - **Monospace (data, IDs, scores, dates):** **JetBrains Mono** — `wght: 400`.
 
 **Hierarchy rule:**
+
 - Numbers a researcher cares about (citations, match %, year) → monospace.
 - Editorial content (project titles, hero, research questions) → serif.
 - Everything else → sans.
@@ -274,18 +280,18 @@ Editorial polish on a modern-tech chassis. *Linear × Stripe Press × an arXiv p
 
 Dark-first; light mode is a stretch.
 
-| Token | Hex | Use |
-|---|---|---|
-| `--ink` | `#0A0E1A` | Primary surface |
-| `--ink-2` | `#111626` | Elevated surface, cards |
-| `--ink-3` | `#1A2236` | Inputs, dividers |
-| `--paper` | `#F5F2EC` | Light blocks, quote cards |
-| `--text` | `#E8E6E1` | Primary text |
-| `--text-dim` | `#8B92A5` | Secondary |
-| `--cyan` | `#3FCEDB` | Actions, scores ≥80 |
-| `--cyan-dim` | `#1A6E78` | Hover/pressed |
-| `--gold` | `#D4A547` | Drop-caps, "accepted" status |
-| `--rose` | `#E26D7A` | Errors, low scores |
+| Token        | Hex       | Use                          |
+| ------------ | --------- | ---------------------------- |
+| `--ink`      | `#0A0E1A` | Primary surface              |
+| `--ink-2`    | `#111626` | Elevated surface, cards      |
+| `--ink-3`    | `#1A2236` | Inputs, dividers             |
+| `--paper`    | `#F5F2EC` | Light blocks, quote cards    |
+| `--text`     | `#E8E6E1` | Primary text                 |
+| `--text-dim` | `#8B92A5` | Secondary                    |
+| `--cyan`     | `#3FCEDB` | Actions, scores ≥80          |
+| `--cyan-dim` | `#1A6E78` | Hover/pressed                |
+| `--gold`     | `#D4A547` | Drop-caps, "accepted" status |
+| `--rose`     | `#E26D7A` | Errors, low scores           |
 
 ### Layout & spacing
 
@@ -415,13 +421,13 @@ Secrets: `GEMINI_API_KEY`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SECRET`, `OPENALEX
 
 ### Risk register
 
-| Risk | Mitigation |
-|---|---|
+| Risk                                               | Mitigation                                                           |
+| -------------------------------------------------- | -------------------------------------------------------------------- |
 | OpenNext on Workers — Node-only npm packages break | Audit imports; prefer Workers-native libs (Drizzle, Hono) and stdlib |
-| Gemini 3 Flash quotas during rehearsal | KV idempotency + warm-up script before showtime |
-| Clerk webhook lag (1-3s on user creation) | Server actions read-through Clerk API and upsert if missing |
-| D1 cold start | Health-check query on landing render |
-| OpenAlex rate limit (10 req/s polite pool) | `OPENALEX_EMAIL` header + KV cache |
+| Gemini 3 Flash quotas during rehearsal             | KV idempotency + warm-up script before showtime                      |
+| Clerk webhook lag (1-3s on user creation)          | Server actions read-through Clerk API and upsert if missing          |
+| D1 cold start                                      | Health-check query on landing render                                 |
+| OpenAlex rate limit (10 req/s polite pool)         | `OPENALEX_EMAIL` header + KV cache                                   |
 
 ---
 
@@ -429,7 +435,7 @@ Secrets: `GEMINI_API_KEY`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SECRET`, `OPENALEX
 
 ### Not building
 
-- Real-time chat (the translation cards *are* the comms layer).
+- Real-time chat (the translation cards _are_ the comms layer).
 - Notifications (email or in-app bell).
 - Payments / billing / contracts.
 - Light mode.

@@ -49,6 +49,7 @@ tests/lib/match/
 ## Task 1: Concept-overlap scoring math (TDD)
 
 **Files:**
+
 - Create: `lib/match/score.ts`, `tests/lib/match/score.test.ts`
 
 - [ ] **Step 1: Write the failing tests**
@@ -222,8 +223,7 @@ export function scoreMatch(input: ScoreInput): ScoreResult {
     perQuestion.push({ questionId: q.id, score });
     total += score;
   }
-  const baseScore =
-    input.questions.length === 0 ? 0 : Math.round(total / input.questions.length);
+  const baseScore = input.questions.length === 0 ? 0 : Math.round(total / input.questions.length);
   return { baseScore, perQuestion };
 }
 ```
@@ -248,11 +248,12 @@ git commit -m "feat(match): add concept-overlap scoring math + tests"
 ## Task 2: AI-3 prompt for match rationale
 
 **Files:**
+
 - Create: `lib/ai/prompts/score-match.ts`, `tests/lib/ai/prompts/score-match.test.ts`
 
 - [ ] **Step 1: Define a richer Zod schema for AI-3 output**
 
-This already exists in `lib/ai/schemas.ts` (`matchResultSchema`). We need to extend it to include the *adjustment* field. Modify `lib/ai/schemas.ts`:
+This already exists in `lib/ai/schemas.ts` (`matchResultSchema`). We need to extend it to include the _adjustment_ field. Modify `lib/ai/schemas.ts`:
 
 ```typescript
 // Replace matchResultSchema with:
@@ -303,14 +304,15 @@ export interface ScoreMatchInput {
   pitch: string;
   questions: { id: string; question: string; concepts: { label: string; weight: number }[] }[];
   teamConcepts: { label: string; weight: number }[];
-  members: { name: string; topPublications: { title: string; abstract: string | null; year: number | null }[] }[];
+  members: {
+    name: string;
+    topPublications: { title: string; abstract: string | null; year: number | null }[];
+  }[];
 }
 
 export type ScoreMatchOutput = z.infer<typeof matchRationaleSchema>;
 
-export async function scoreMatchRationale(
-  input: ScoreMatchInput
-): Promise<ScoreMatchOutput> {
+export async function scoreMatchRationale(input: ScoreMatchInput): Promise<ScoreMatchOutput> {
   const prompt = `BASE SCORE (concept-overlap, 0-100): ${input.baseScore}
 
 RESEARCH QUESTIONS:
@@ -358,7 +360,8 @@ import { describe, it, expect, vi } from "vitest";
 
 vi.mock("@/lib/ai/gemini", () => ({
   generate: vi.fn(async () => ({
-    rationale: "Strong on graph methods and causal inference; pitch shows clear understanding of the time-series constraint.",
+    rationale:
+      "Strong on graph methods and causal inference; pitch shows clear understanding of the time-series constraint.",
     adjustment: 4,
     per_question_alignment: [
       { question_id: "q1", score: 88, why: "Direct match in publications." },
@@ -378,7 +381,11 @@ describe("scoreMatchRationale", () => {
       pitch: "We are excited to apply.",
       questions: [
         { id: "q1", question: "How predict churn?", concepts: [{ label: "ml", weight: 0.7 }] },
-        { id: "q2", question: "What interventions?", concepts: [{ label: "experimental design", weight: 0.6 }] },
+        {
+          id: "q2",
+          question: "What interventions?",
+          concepts: [{ label: "experimental design", weight: 0.6 }],
+        },
       ],
       teamConcepts: [{ label: "ml", weight: 0.8 }],
       members: [
@@ -390,7 +397,9 @@ describe("scoreMatchRationale", () => {
     });
     expect(out.adjustment).toBe(4);
     expect(out.per_question_alignment).toHaveLength(2);
-    const args = (generate as unknown as { mock: { calls: unknown[][] } }).mock.calls[0]![1] as { prompt: string };
+    const args = (generate as unknown as { mock: { calls: unknown[][] } }).mock.calls[0]![1] as {
+      prompt: string;
+    };
     expect(args.prompt).toContain("BASE SCORE");
     expect(args.prompt).toContain("Alice");
   });
@@ -417,6 +426,7 @@ git commit -m "feat(ai): add scoreMatchRationale (AI-3) prompt + test"
 ## Task 3: Apply server action
 
 **Files:**
+
 - Create: `lib/actions/applications.ts`
 
 - [ ] **Step 1: Create `lib/actions/applications.ts`**
@@ -450,8 +460,7 @@ export async function applyToProject(input: {
   teamId: string;
   pitch: string;
 }): Promise<
-  | { ok: true; applicationId: string; matchScore: number }
-  | { ok: false; error: string }
+  { ok: true; applicationId: string; matchScore: number } | { ok: false; error: string }
 > {
   const { userId } = await auth();
   if (!userId) return { ok: false, error: "not signed in" };
@@ -482,10 +491,7 @@ export async function applyToProject(input: {
 
   // No duplicate apps from same team
   const dup = await db.query.applications.findFirst({
-    where: and(
-      eq(applications.projectId, input.projectId),
-      eq(applications.teamId, input.teamId)
-    ),
+    where: and(eq(applications.projectId, input.projectId), eq(applications.teamId, input.teamId)),
   });
   if (dup) return { ok: false, error: "team has already applied" };
 
@@ -507,9 +513,7 @@ export async function applyToProject(input: {
     .leftJoin(researchers, eq(researchers.userId, users.id))
     .where(eq(teamMembers.teamId, input.teamId));
 
-  const researcherIds = members
-    .map((m) => m.researcherId)
-    .filter((x): x is string => Boolean(x));
+  const researcherIds = members.map((m) => m.researcherId).filter((x): x is string => Boolean(x));
 
   const concepts =
     researcherIds.length === 0
@@ -575,8 +579,7 @@ export async function applyToProject(input: {
   } catch (e) {
     console.error("AI-3 failed", e);
     aiResult = {
-      rationale:
-        "Match rationale could not be generated. Score is based on concept overlap only.",
+      rationale: "Match rationale could not be generated. Score is based on concept overlap only.",
       adjustment: 0,
       per_question_alignment: matchResult.perQuestion.map((p) => ({
         question_id: p.questionId,
@@ -586,10 +589,7 @@ export async function applyToProject(input: {
     };
   }
 
-  const finalScore = Math.max(
-    0,
-    Math.min(100, matchResult.baseScore + aiResult.adjustment)
-  );
+  const finalScore = Math.max(0, Math.min(100, matchResult.baseScore + aiResult.adjustment));
 
   const applicationId = uuidv7();
   await db.insert(applications).values({
@@ -625,8 +625,7 @@ export async function acceptTeam(input: {
     .innerJoin(companies, eq(companies.id, projects.companyId))
     .where(eq(projects.id, input.projectId))
     .limit(1);
-  if (!project || project.ownerUserId !== user.id)
-    return { ok: false, error: "project not found" };
+  if (!project || project.ownerUserId !== user.id) return { ok: false, error: "project not found" };
   if (project.status !== "open")
     return { ok: false, error: "project is not accepting applications" };
 
@@ -654,12 +653,7 @@ export async function acceptTeam(input: {
   await db
     .update(applications)
     .set({ status: "rejected" })
-    .where(
-      and(
-        eq(applications.projectId, input.projectId),
-        eq(applications.status, "pending")
-      )
-    );
+    .where(and(eq(applications.projectId, input.projectId), eq(applications.status, "pending")));
 
   revalidatePath(`/projects/${input.projectId}`);
   revalidatePath(`/projects/${input.projectId}/manage`);
@@ -695,6 +689,7 @@ git commit -m "feat(applications): add applyToProject + acceptTeam actions"
 ## Task 4: `/projects/[id]/apply` page
 
 **Files:**
+
 - Create: `app/(app)/projects/[id]/apply/page.tsx`, `app/(app)/projects/[id]/apply/_components/team-picker.tsx`, `app/(app)/projects/[id]/apply/_components/apply-form.tsx`, `lib/db/queries/eligible-teams.ts`
 
 - [ ] **Step 1: Create eligible-teams query**
@@ -704,19 +699,14 @@ import { eq, and, notInArray } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { teams, teamMembers, applications } from "@/lib/db/schema";
 
-export async function getEligibleTeamsForProject(
-  userId: string,
-  projectId: string
-) {
+export async function getEligibleTeamsForProject(userId: string, projectId: string) {
   const db = getDb();
   // Teams where user is lead
   const myLeadTeams = await db
     .select({ id: teams.id, name: teams.name })
     .from(teamMembers)
     .innerJoin(teams, eq(teams.id, teamMembers.teamId))
-    .where(
-      and(eq(teamMembers.userId, userId), eq(teamMembers.role, "lead"))
-    );
+    .where(and(eq(teamMembers.userId, userId), eq(teamMembers.role, "lead")));
 
   if (myLeadTeams.length === 0) return [];
 
@@ -910,6 +900,7 @@ git commit -m "feat(applications): add /projects/[id]/apply"
 ## Task 5: Score chip + alignment bars (visual primitives)
 
 **Files:**
+
 - Create: `components/match/score-chip.tsx`, `components/match/alignment-bars.tsx`
 
 - [ ] **Step 1: Create `components/match/score-chip.tsx`**
@@ -1024,6 +1015,7 @@ git commit -m "feat(match): add score chip + alignment bars"
 ## Task 6: `/projects/[id]/manage` page (company side)
 
 **Files:**
+
 - Create: `app/(app)/projects/[id]/manage/page.tsx`, `app/(app)/projects/[id]/manage/_components/application-card.tsx`, `app/(app)/projects/[id]/manage/_components/accept-button.tsx`, `lib/db/queries/applications-list.ts`
 
 - [ ] **Step 1: Create the query**
@@ -1281,6 +1273,7 @@ export default async function ManagePage({
 - [ ] **Step 5: End-to-end smoke-test**
 
 Two browsers:
+
 - Researcher with onboarded profile and a team → `/projects/<open-id>/apply` → submit pitch → loading skeleton (Computing concept overlap → Asking Gemini) → redirect to `/teams/<team-id>` showing the new application listed (in dashboard).
 - Company → `/projects/<id>/manage` → see the new application with score, rationale, and per-question alignment expandable.
 - Company clicks Accept → status flips, project redirects to `/dashboard` (alignment dashboard arrives in Plan 6).

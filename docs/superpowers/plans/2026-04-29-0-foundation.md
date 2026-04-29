@@ -13,6 +13,7 @@
 ## Prerequisites
 
 Before starting:
+
 - A Cloudflare account with billing enabled (D1, R2, KV are within free-tier limits but R2 needs the toggle).
 - `wrangler` CLI installed and `wrangler login` completed.
 - A Clerk account with one application provisioned ("Polymath Staging"). Note the publishable key + secret key + webhook signing secret.
@@ -68,6 +69,7 @@ polymath/
 ## Task 1: Initialize Next.js project
 
 **Files:**
+
 - Create: `package.json`, `tsconfig.json`, `next.config.ts`, `app/layout.tsx`, `app/page.tsx`, `app/globals.css`, `.gitignore`
 
 - [ ] **Step 1: Create the Next.js app**
@@ -152,6 +154,7 @@ git commit -m "chore: scaffold Next.js 15 app with strict TypeScript"
 ## Task 2: Wire `@opennextjs/cloudflare` for Workers deploy
 
 **Files:**
+
 - Create: `open-next.config.ts`, `wrangler.toml`
 - Modify: `package.json`, `next.config.ts`
 
@@ -325,6 +328,7 @@ git commit -m "chore: provision Cloudflare D1/R2/KV bindings"
 ## Task 4: Tailwind v4 design tokens
 
 **Files:**
+
 - Modify: `app/globals.css`
 - Create: `app/fonts.ts`
 - Modify: `app/layout.tsx`
@@ -388,16 +392,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #0A0E1A;
+  --color-ink: #0a0e1a;
   --color-ink-2: #111626;
-  --color-ink-3: #1A2236;
-  --color-paper: #F5F2EC;
-  --color-text: #E8E6E1;
-  --color-text-dim: #8B92A5;
-  --color-cyan: #3FCEDB;
-  --color-cyan-dim: #1A6E78;
-  --color-gold: #D4A547;
-  --color-rose: #E26D7A;
+  --color-ink-3: #1a2236;
+  --color-paper: #f5f2ec;
+  --color-text: #e8e6e1;
+  --color-text-dim: #8b92a5;
+  --color-cyan: #3fcedb;
+  --color-cyan-dim: #1a6e78;
+  --color-gold: #d4a547;
+  --color-rose: #e26d7a;
 
   --font-display: var(--font-display);
   --font-sans: var(--font-sans);
@@ -413,7 +417,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     font-family: var(--font-sans), system-ui, sans-serif;
     line-height: 1.6;
   }
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     font-family: var(--font-display), Georgia, serif;
     font-feature-settings: "ss01";
     letter-spacing: -0.011em;
@@ -444,6 +450,7 @@ git commit -m "feat(design): apply Polymath color and typography tokens"
 ## Task 5: Install shadcn/ui baseline + override Button, Card, Input
 
 **Files:**
+
 - Create: `components/ui/button.tsx`, `components/ui/card.tsx`, `components/ui/input.tsx`, `components/ui/label.tsx`
 - Create: `lib/utils.ts`
 - Modify: `package.json`
@@ -691,6 +698,7 @@ git commit -m "feat(ui): add Button, Card, Input, Label primitives"
 ## Task 6: Drizzle ORM + full schema + first migration
 
 **Files:**
+
 - Create: `lib/db/schema.ts`, `lib/db/client.ts`, `drizzle.config.ts`
 - Modify: `package.json`
 
@@ -713,8 +721,14 @@ This is the single source of truth for the data model. Mirrors §4 of the design
 import { sql } from "drizzle-orm";
 import { sqliteTable, text, integer, real, index, uniqueIndex } from "drizzle-orm/sqlite-core";
 
-const ts = () => integer("created_at").notNull().default(sql`(unixepoch() * 1000)`);
-const updatedTs = () => integer("updated_at").notNull().default(sql`(unixepoch() * 1000)`);
+const ts = () =>
+  integer("created_at")
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`);
+const updatedTs = () =>
+  integer("updated_at")
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`);
 
 export const users = sqliteTable(
   "users",
@@ -735,7 +749,9 @@ export const users = sqliteTable(
 
 export const companies = sqliteTable("companies", {
   id: text("id").primaryKey(),
-  ownerUserId: text("owner_user_id").notNull().references(() => users.id),
+  ownerUserId: text("owner_user_id")
+    .notNull()
+    .references(() => users.id),
   name: text("name").notNull(),
   description: text("description"),
   website: text("website"),
@@ -745,7 +761,9 @@ export const companies = sqliteTable("companies", {
 
 export const researchers = sqliteTable("researchers", {
   id: text("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id),
   openalexId: text("openalex_id"),
   orcid: text("orcid"),
   affiliation: text("affiliation"),
@@ -758,7 +776,9 @@ export const publications = sqliteTable(
   "publications",
   {
     id: text("id").primaryKey(),
-    researcherId: text("researcher_id").notNull().references(() => researchers.id),
+    researcherId: text("researcher_id")
+      .notNull()
+      .references(() => researchers.id),
     openalexWorkId: text("openalex_work_id"),
     title: text("title").notNull(),
     year: integer("year"),
@@ -777,7 +797,9 @@ export const researcherConcepts = sqliteTable(
   "researcher_concepts",
   {
     id: text("id").primaryKey(),
-    researcherId: text("researcher_id").notNull().references(() => researchers.id),
+    researcherId: text("researcher_id")
+      .notNull()
+      .references(() => researchers.id),
     concept: text("concept").notNull(),
     score: real("score").notNull(),
     createdAt: ts(),
@@ -791,7 +813,9 @@ export const teams = sqliteTable("teams", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
-  createdByUserId: text("created_by_user_id").notNull().references(() => users.id),
+  createdByUserId: text("created_by_user_id")
+    .notNull()
+    .references(() => users.id),
   createdAt: ts(),
 });
 
@@ -799,10 +823,16 @@ export const teamMembers = sqliteTable(
   "team_members",
   {
     id: text("id").primaryKey(),
-    teamId: text("team_id").notNull().references(() => teams.id),
-    userId: text("user_id").notNull().references(() => users.id),
+    teamId: text("team_id")
+      .notNull()
+      .references(() => teams.id),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
     role: text("role", { enum: ["lead", "member"] }).notNull(),
-    joinedAt: integer("joined_at").notNull().default(sql`(unixepoch() * 1000)`),
+    joinedAt: integer("joined_at")
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
   },
   (t) => ({
     uniq: uniqueIndex("team_members_uniq").on(t.teamId, t.userId),
@@ -815,7 +845,9 @@ export const teamInvites = sqliteTable(
   "team_invites",
   {
     id: text("id").primaryKey(),
-    teamId: text("team_id").notNull().references(() => teams.id),
+    teamId: text("team_id")
+      .notNull()
+      .references(() => teams.id),
     code: text("code").notNull(),
     invitedEmail: text("invited_email"),
     expiresAt: integer("expires_at").notNull(),
@@ -831,7 +863,9 @@ export const projects = sqliteTable(
   "projects",
   {
     id: text("id").primaryKey(),
-    companyId: text("company_id").notNull().references(() => companies.id),
+    companyId: text("company_id")
+      .notNull()
+      .references(() => companies.id),
     title: text("title").notNull(),
     businessPlan: text("business_plan").notNull(),
     endGoal: text("end_goal").notNull(),
@@ -852,7 +886,9 @@ export const researchQuestions = sqliteTable(
   "research_questions",
   {
     id: text("id").primaryKey(),
-    projectId: text("project_id").notNull().references(() => projects.id),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id),
     question: text("question").notNull(),
     rationale: text("rationale").notNull(),
     orderIndex: integer("order_index").notNull(),
@@ -869,8 +905,12 @@ export const applications = sqliteTable(
   "applications",
   {
     id: text("id").primaryKey(),
-    projectId: text("project_id").notNull().references(() => projects.id),
-    teamId: text("team_id").notNull().references(() => teams.id),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id),
+    teamId: text("team_id")
+      .notNull()
+      .references(() => teams.id),
     status: text("status", { enum: ["pending", "accepted", "rejected"] })
       .notNull()
       .default("pending"),
@@ -890,11 +930,17 @@ export const reports = sqliteTable(
   "reports",
   {
     id: text("id").primaryKey(),
-    projectId: text("project_id").notNull().references(() => projects.id),
-    teamId: text("team_id").notNull().references(() => teams.id),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id),
+    teamId: text("team_id")
+      .notNull()
+      .references(() => teams.id),
     weekOf: text("week_of").notNull(), // ISO date YYYY-MM-DD
     rawMarkdown: text("raw_markdown").notNull(),
-    submittedByUserId: text("submitted_by_user_id").notNull().references(() => users.id),
+    submittedByUserId: text("submitted_by_user_id")
+      .notNull()
+      .references(() => users.id),
     createdAt: ts(),
   },
   (t) => ({
@@ -906,7 +952,9 @@ export const reportFindings = sqliteTable(
   "report_findings",
   {
     id: text("id").primaryKey(),
-    reportId: text("report_id").notNull().references(() => reports.id),
+    reportId: text("report_id")
+      .notNull()
+      .references(() => reports.id),
     researchQuestionId: text("research_question_id")
       .notNull()
       .references(() => researchQuestions.id),
@@ -922,7 +970,9 @@ export const reportFindings = sqliteTable(
 
 export const reportFiles = sqliteTable("report_files", {
   id: text("id").primaryKey(),
-  reportId: text("report_id").notNull().references(() => reports.id),
+  reportId: text("report_id")
+    .notNull()
+    .references(() => reports.id),
   r2Key: text("r2_key").notNull(),
   filename: text("filename").notNull(),
   size: integer("size").notNull(),
@@ -1013,6 +1063,7 @@ git commit -m "feat(db): add Drizzle schema + initial migration"
 ## Task 7: Clerk auth middleware + role selection stub
 
 **Files:**
+
 - Create: `middleware.ts`, `app/(auth)/sign-in/[[...sign-in]]/page.tsx`, `app/(auth)/sign-up/[[...sign-up]]/page.tsx`, `app/(app)/dashboard/page.tsx`, `app/api/webhooks/clerk/route.ts`, `lib/auth/sync-user.ts`
 - Modify: `app/layout.tsx`, `package.json`, `.env.example`
 
@@ -1151,7 +1202,8 @@ export async function syncUser(clerkUser: ClerkUser): Promise<AppUser> {
   });
   if (existing) return existing;
 
-  const role = (clerkUser.unsafeMetadata?.role as "company" | "researcher" | undefined) ?? "researcher";
+  const role =
+    (clerkUser.unsafeMetadata?.role as "company" | "researcher" | undefined) ?? "researcher";
   const displayName =
     [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") ||
     clerkUser.username ||
@@ -1199,7 +1251,16 @@ export async function POST(req: Request) {
     return new Response("missing svix headers", { status: 400 });
 
   const wh = new Webhook(secret);
-  let evt: { type: string; data: { id: string; email_addresses: { email_address: string }[]; first_name?: string; last_name?: string; unsafe_metadata?: Record<string, unknown> } };
+  let evt: {
+    type: string;
+    data: {
+      id: string;
+      email_addresses: { email_address: string }[];
+      first_name?: string;
+      last_name?: string;
+      unsafe_metadata?: Record<string, unknown>;
+    };
+  };
   try {
     evt = wh.verify(payload, {
       "svix-id": svixId,
@@ -1215,8 +1276,7 @@ export async function POST(req: Request) {
     const clerkId = evt.data.id;
     const email = evt.data.email_addresses[0]?.email_address ?? "";
     const role =
-      (evt.data.unsafe_metadata?.role as "company" | "researcher" | undefined) ??
-      "researcher";
+      (evt.data.unsafe_metadata?.role as "company" | "researcher" | undefined) ?? "researcher";
     const displayName =
       [evt.data.first_name, evt.data.last_name].filter(Boolean).join(" ") || "Anonymous";
 
@@ -1280,6 +1340,7 @@ git commit -m "feat(auth): add Clerk middleware, sign-in/up, dashboard stub, use
 ## Task 8: Gemini wrapper + Zod schemas + unit test
 
 **Files:**
+
 - Create: `lib/ai/gemini.ts`, `lib/ai/schemas.ts`, `tests/lib/ai/gemini.test.ts`
 - Create: `vitest.config.ts`
 - Modify: `package.json`
@@ -1387,18 +1448,17 @@ interface GenerateOpts {
 }
 
 export class GeminiError extends Error {
-  constructor(message: string, public cause?: unknown) {
+  constructor(
+    message: string,
+    public cause?: unknown
+  ) {
     super(message);
     this.name = "GeminiError";
   }
 }
 
-export async function generate<T>(
-  schema: z.ZodSchema<T>,
-  opts: GenerateOpts
-): Promise<T> {
-  const apiKey =
-    opts.apiKey ?? getCloudflareContext().env.GEMINI_API_KEY;
+export async function generate<T>(schema: z.ZodSchema<T>, opts: GenerateOpts): Promise<T> {
+  const apiKey = opts.apiKey ?? getCloudflareContext().env.GEMINI_API_KEY;
   if (!apiKey) throw new GeminiError("GEMINI_API_KEY not set");
   const fetchImpl = opts.fetchImpl ?? fetch;
 
@@ -1455,11 +1515,12 @@ import { generate, GeminiError } from "@/lib/ai/gemini";
 const schema = z.object({ greeting: z.string() });
 
 function mockFetch(body: unknown, status = 200) {
-  return vi.fn(async () =>
-    new Response(JSON.stringify(body), {
-      status,
-      headers: { "content-type": "application/json" },
-    })
+  return vi.fn(
+    async () =>
+      new Response(JSON.stringify(body), {
+        status,
+        headers: { "content-type": "application/json" },
+      })
   );
 }
 
@@ -1497,9 +1558,7 @@ describe("generate", () => {
 
   it("throws on schema mismatch", async () => {
     const fetchImpl = mockFetch({
-      candidates: [
-        { content: { parts: [{ text: JSON.stringify({ wrong: 1 }) }] } },
-      ],
+      candidates: [{ content: { parts: [{ text: JSON.stringify({ wrong: 1 }) }] } }],
     });
     await expect(
       generate(schema, {
@@ -1547,6 +1606,7 @@ git commit -m "feat(ai): add Gemini wrapper with Zod validation + tests"
 ## Task 9: ESLint flat config + Prettier + Husky
 
 **Files:**
+
 - Create: `eslint.config.mjs`, `.prettierrc.json`, `.prettierignore`, `.husky/pre-commit`, `commitlint.config.mjs`
 - Modify: `package.json`
 
@@ -1679,6 +1739,7 @@ git commit -m "chore: add ESLint, Prettier, Husky, commitlint"
 ## Task 10: GitHub Actions CI + deploy workflows
 
 **Files:**
+
 - Create: `.github/workflows/ci.yml`, `.github/workflows/deploy.yml`, `.github/PULL_REQUEST_TEMPLATE.md`, `CODEOWNERS`
 
 - [ ] **Step 1: Create `.github/workflows/ci.yml`**
@@ -1828,6 +1889,7 @@ Expected: a deployment URL is printed (e.g. `https://polymath.<your-subdomain>.w
 - [ ] **Step 4: Smoke-test deployed app**
 
 Visit the deployed URL. Verify:
+
 - Landing renders (Fraunces serif, dark background, primary cyan button).
 - `/sign-up` shows Clerk's hosted form.
 - After signup, `/dashboard` renders the welcome message and `users` row appears in D1 (`wrangler d1 execute polymath-staging --command="SELECT * FROM users" --remote`).
@@ -1850,6 +1912,7 @@ git commit -m "docs: link staging deploy URL"
 ## Task 12: CLAUDE.md and runbook skeletons
 
 **Files:**
+
 - Create: `CLAUDE.md`, `docs/runbook.md`
 
 - [ ] **Step 1: Create `CLAUDE.md`**
@@ -1860,6 +1923,7 @@ git commit -m "docs: link staging deploy URL"
 This file is read by Claude Code (and similar agents) at the start of a session. Keep it short and current.
 
 ## Stack
+
 - Next.js 15 App Router on Cloudflare Workers via `@opennextjs/cloudflare`
 - D1 (Drizzle), R2, KV bound at the Worker level
 - Clerk for auth (`middleware.ts`)
@@ -1868,6 +1932,7 @@ This file is read by Claude Code (and similar agents) at the start of a session.
 - shadcn/ui primitives in `components/ui/*` (overridden, committed)
 
 ## Conventions
+
 - TypeScript strict (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`).
 - Server actions for mutations. Route handlers only for webhooks and public read APIs.
 - Drizzle schema in `lib/db/schema.ts` is the source of truth for the data model. Never edit migrations directly; regenerate with `pnpm db:generate`.
@@ -1876,12 +1941,14 @@ This file is read by Claude Code (and similar agents) at the start of a session.
 - Time is `unixepoch() * 1000` (ms since epoch).
 
 ## Don'ts
+
 - Don't add Node-only deps without verifying Worker compatibility.
 - Don't bypass the Gemini wrapper for raw LLM calls.
 - Don't hand-write migrations.
 - Don't add tests outside `tests/lib/ai/*`, `tests/lib/openalex/*`, `tests/lib/match/*` unless explicitly planned (per spec §9).
 
 ## Plans
+
 Active plans live in `docs/superpowers/plans/`. Read the relevant one before changes. The design spec is `docs/superpowers/specs/2026-04-29-polymath-design.md`.
 ```
 
@@ -1891,17 +1958,20 @@ Active plans live in `docs/superpowers/plans/`. Read the relevant one before cha
 # Polymath — Runbook
 
 ## Local dev
+
 1. `pnpm install`
 2. Copy `.env.example` to `.env.local`, fill in keys.
 3. `pnpm dev` — Next.js dev server at http://localhost:3000.
 4. `pnpm preview` — Cloudflare-emulated preview at http://localhost:8787.
 
 ## Deploys
+
 - Staging: auto-deploys on merge to `main`.
 - Production: `pnpm deploy:prod` or `gh workflow run deploy.yml -f env=production`.
 - After deploy, tag the demo commit: `git tag demo && git push origin demo`.
 
 ## Database
+
 - Generate migration after schema change: `pnpm db:generate`
 - Apply to staging: `pnpm db:migrate:staging`
 - Apply to production: `pnpm db:migrate:prod`
@@ -1911,6 +1981,7 @@ Active plans live in `docs/superpowers/plans/`. Read the relevant one before cha
 ## Demo procedure (TO BE FILLED IN BY PLAN 7)
 
 ## Demo-day fallbacks
+
 Every live AI moment supports `?demo=fallback` query param. (Wired in Plan 7.)
 ```
 

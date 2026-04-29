@@ -5,12 +5,14 @@ import { generate, GeminiError } from "@/lib/ai/gemini";
 const schema = z.object({ greeting: z.string() });
 
 function mockFetch(body: unknown, status = 200) {
-  return vi.fn(async () =>
-    new Response(JSON.stringify(body), {
-      status,
-      headers: { "content-type": "application/json" },
-    })
-  );
+  return vi.fn(() =>
+    Promise.resolve(
+      new Response(JSON.stringify(body), {
+        status,
+        headers: { "content-type": "application/json" },
+      })
+    )
+  ) as unknown as typeof fetch;
 }
 
 describe("generate", () => {
@@ -28,7 +30,7 @@ describe("generate", () => {
       system: "s",
       prompt: "p",
       apiKey: "test",
-      fetchImpl: fetchImpl as unknown as typeof fetch,
+      fetchImpl,
     });
     expect(out).toEqual({ greeting: "hello" });
   });
@@ -40,23 +42,21 @@ describe("generate", () => {
         system: "s",
         prompt: "p",
         apiKey: "test",
-        fetchImpl: fetchImpl as unknown as typeof fetch,
+        fetchImpl,
       })
     ).rejects.toThrow(GeminiError);
   });
 
   it("throws on schema mismatch", async () => {
     const fetchImpl = mockFetch({
-      candidates: [
-        { content: { parts: [{ text: JSON.stringify({ wrong: 1 }) }] } },
-      ],
+      candidates: [{ content: { parts: [{ text: JSON.stringify({ wrong: 1 }) }] } }],
     });
     await expect(
       generate(schema, {
         system: "s",
         prompt: "p",
         apiKey: "test",
-        fetchImpl: fetchImpl as unknown as typeof fetch,
+        fetchImpl,
       })
     ).rejects.toThrow(/schema mismatch/);
   });
@@ -70,7 +70,7 @@ describe("generate", () => {
         system: "s",
         prompt: "p",
         apiKey: "test",
-        fetchImpl: fetchImpl as unknown as typeof fetch,
+        fetchImpl,
       })
     ).rejects.toThrow(/not JSON/);
   });

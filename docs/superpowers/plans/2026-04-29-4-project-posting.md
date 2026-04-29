@@ -48,6 +48,7 @@ tests/lib/ai/prompts/
 ## Task 1: AI-1 prompt + Zod schema (already in `lib/ai/schemas.ts` from Plan 0)
 
 **Files:**
+
 - Create: `lib/ai/prompts/generate-questions.ts`, `tests/lib/ai/prompts/generate-questions.test.ts`
 
 - [ ] **Step 1: Create the prompt module**
@@ -171,7 +172,10 @@ describe("generateQuestions", () => {
       endGoal: "Risk score per customer",
     });
     expect(out.questions.length).toBeGreaterThanOrEqual(3);
-    const args = (generate as unknown as { mock: { calls: unknown[][] } }).mock.calls[0]![1] as { system: string; prompt: string };
+    const args = (generate as unknown as { mock: { calls: unknown[][] } }).mock.calls[0]![1] as {
+      system: string;
+      prompt: string;
+    };
     expect(args.prompt).toContain("Churn prediction");
     expect(args.prompt).toContain("B2B SaaS");
     expect(args.system).toContain("research strategist");
@@ -199,6 +203,7 @@ git commit -m "feat(ai): add generateQuestions (AI-1) prompt + test"
 ## Task 2: Project server actions
 
 **Files:**
+
 - Create: `lib/actions/projects.ts`
 
 - [ ] **Step 1: Create `lib/actions/projects.ts`**
@@ -213,11 +218,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db/client";
 import { syncUser } from "@/lib/auth/sync-user";
-import {
-  projects,
-  researchQuestions,
-  companies,
-} from "@/lib/db/schema";
+import { projects, researchQuestions, companies } from "@/lib/db/schema";
 import { generateQuestions } from "@/lib/ai/prompts/generate-questions";
 
 async function ensureCompany(userId: string) {
@@ -244,8 +245,7 @@ export async function createDraftProject(input: {
   if (!userId) return { ok: false, error: "not signed in" };
   const clerkUser = await currentUser();
   const user = await syncUser(clerkUser!);
-  if (user.role !== "company")
-    return { ok: false, error: "only companies can post projects" };
+  if (user.role !== "company") return { ok: false, error: "only companies can post projects" };
 
   const company = await ensureCompany(user.id);
   const projectId = uuidv7();
@@ -346,8 +346,7 @@ export async function updateQuestion(input: {
     .innerJoin(companies, eq(companies.id, projects.companyId))
     .where(eq(projects.id, input.projectId))
     .limit(1);
-  if (!project || project.ownerUserId !== user.id)
-    return { ok: false, error: "project not found" };
+  if (!project || project.ownerUserId !== user.id) return { ok: false, error: "project not found" };
   if (project.status !== "draft")
     return { ok: false, error: "can only edit questions on draft projects" };
 
@@ -379,10 +378,8 @@ export async function publishProject(
     .innerJoin(companies, eq(companies.id, projects.companyId))
     .where(eq(projects.id, projectId))
     .limit(1);
-  if (!project || project.ownerUserId !== user.id)
-    return { ok: false, error: "project not found" };
-  if (project.status !== "draft")
-    return { ok: false, error: "already published" };
+  if (!project || project.ownerUserId !== user.id) return { ok: false, error: "project not found" };
+  if (project.status !== "draft") return { ok: false, error: "already published" };
 
   const qs = await db
     .select()
@@ -391,7 +388,10 @@ export async function publishProject(
   if (qs.length === 0)
     return { ok: false, error: "publish requires at least one research question" };
 
-  await db.update(projects).set({ status: "open", updatedAt: Date.now() }).where(eq(projects.id, projectId));
+  await db
+    .update(projects)
+    .set({ status: "open", updatedAt: Date.now() })
+    .where(eq(projects.id, projectId));
   revalidatePath(`/projects`);
   revalidatePath(`/projects/${projectId}`);
   return { ok: true };
@@ -410,6 +410,7 @@ git commit -m "feat(projects): add createDraftProject, regenerate, update, publi
 ## Task 3: Project edit query
 
 **Files:**
+
 - Create: `lib/db/queries/project-edit.ts`
 
 - [ ] **Step 1: Create the query**
@@ -459,6 +460,7 @@ git commit -m "feat(db): add getProjectForEdit query"
 ## Task 4: `/projects/new` (step 1 — input)
 
 **Files:**
+
 - Create: `app/(app)/projects/new/page.tsx`, `app/(app)/projects/new/_components/business-plan-form.tsx`
 
 - [ ] **Step 1: Create the form**
@@ -609,6 +611,7 @@ git commit -m "feat(projects): add /projects/new wizard step 1"
 ## Task 5: `/projects/[id]/edit` (step 2 — review/regenerate/publish)
 
 **Files:**
+
 - Create: `app/(app)/projects/[id]/edit/page.tsx`, `app/(app)/projects/[id]/edit/_components/questions-editor.tsx`, `app/(app)/projects/[id]/edit/_components/regenerate-button.tsx`, `app/(app)/projects/[id]/edit/_components/publish-button.tsx`
 
 - [ ] **Step 1: Create `_components/regenerate-button.tsx`**
@@ -874,6 +877,7 @@ export default async function EditProjectPage({
 - [ ] **Step 5: Smoke-test the full flow**
 
 Sign in as a company. Visit `/projects/new`:
+
 1. Fill in title, business plan, end-goal. Submit.
 2. Watch the loading skeleton, redirect to `/projects/<id>/edit`.
 3. See 4-7 AI-generated questions. Edit one inline. Save.
@@ -893,6 +897,7 @@ git commit -m "feat(projects): add /projects/[id]/edit step 2 (review/regenerate
 ## Task 6: Company dashboard
 
 **Files:**
+
 - Create: `lib/db/queries/company-dashboard.ts`, `app/(app)/dashboard/_components/company-dashboard.tsx`
 - Modify: `app/(app)/dashboard/page.tsx`
 
@@ -930,7 +935,10 @@ export async function getCompanyDashboard(userId: string) {
       .where(eq(applications.projectId, p.id));
     counts[p.id] = apps.length;
   }
-  return { company, projects: myProjects.map((p) => ({ ...p, applicantCount: counts[p.id] ?? 0 })) };
+  return {
+    company,
+    projects: myProjects.map((p) => ({ ...p, applicantCount: counts[p.id] ?? 0 })),
+  };
 }
 ```
 

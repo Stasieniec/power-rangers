@@ -43,6 +43,7 @@ tests/lib/ai/prompts/
 ## Task 1: AI-4 prompt + tests
 
 **Files:**
+
 - Create: `lib/ai/prompts/translate-report.ts`, `tests/lib/ai/prompts/translate-report.test.ts`
 
 - [ ] **Step 1: Create the prompt module**
@@ -81,9 +82,7 @@ export interface TranslateReportInput {
 
 export type TranslateReportOutput = z.infer<typeof reportFindingsSchema>;
 
-export async function translateReport(
-  input: TranslateReportInput
-): Promise<TranslateReportOutput> {
+export async function translateReport(input: TranslateReportInput): Promise<TranslateReportOutput> {
   const prompt = `END-GOAL:
 ${input.endGoal}
 
@@ -91,9 +90,7 @@ RESEARCH QUESTIONS:
 ${input.questions.map((q) => `- [${q.id}] ${q.question}`).join("\n")}
 
 ${
-  input.priorFindingsSummary
-    ? `PRIOR FINDINGS SUMMARY:\n${input.priorFindingsSummary}\n\n`
-    : ""
+  input.priorFindingsSummary ? `PRIOR FINDINGS SUMMARY:\n${input.priorFindingsSummary}\n\n` : ""
 }THIS WEEK'S REPORT:
 ${input.reportMarkdown}
 
@@ -137,7 +134,9 @@ describe("translateReport", () => {
       reportMarkdown: "## Week 1\nTrained XGBoost, AUC 0.87.",
     });
     expect(out.findings[0]?.research_question_id).toBe("q1");
-    const args = (generate as unknown as { mock: { calls: unknown[][] } }).mock.calls[0]![1] as { prompt: string };
+    const args = (generate as unknown as { mock: { calls: unknown[][] } }).mock.calls[0]![1] as {
+      prompt: string;
+    };
     expect(args.prompt).toContain("Week 1");
     expect(args.prompt).toContain("Predict churn");
   });
@@ -149,7 +148,9 @@ describe("translateReport", () => {
       priorFindingsSummary: "Last week: identified feature set.",
       reportMarkdown: "Week 2",
     });
-    const args = (generate as unknown as { mock: { calls: unknown[][] } }).mock.calls[1]![1] as { prompt: string };
+    const args = (generate as unknown as { mock: { calls: unknown[][] } }).mock.calls[1]![1] as {
+      prompt: string;
+    };
     expect(args.prompt).toContain("PRIOR FINDINGS SUMMARY");
     expect(args.prompt).toContain("identified feature set");
   });
@@ -176,6 +177,7 @@ git commit -m "feat(ai): add translateReport (AI-4) prompt + test"
 ## Task 2: Submit-report server action
 
 **Files:**
+
 - Create: `lib/actions/reports.ts`
 
 - [ ] **Step 1: Create `lib/actions/reports.ts`**
@@ -189,13 +191,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db/client";
 import { syncUser } from "@/lib/auth/sync-user";
-import {
-  reports,
-  reportFindings,
-  projects,
-  researchQuestions,
-  teamMembers,
-} from "@/lib/db/schema";
+import { reports, reportFindings, projects, researchQuestions, teamMembers } from "@/lib/db/schema";
 import { translateReport } from "@/lib/ai/prompts/translate-report";
 
 export async function submitReport(input: {
@@ -215,17 +211,12 @@ export async function submitReport(input: {
     .where(eq(projects.id, input.projectId))
     .limit(1);
   if (!project) return { ok: false, error: "project not found" };
-  if (project.status !== "in_progress")
-    return { ok: false, error: "project must be in progress" };
-  if (!project.acceptedTeamId)
-    return { ok: false, error: "no accepted team" };
+  if (project.status !== "in_progress") return { ok: false, error: "project must be in progress" };
+  if (!project.acceptedTeamId) return { ok: false, error: "no accepted team" };
 
   // verify the user is on the accepted team
   const member = await db.query.teamMembers.findFirst({
-    where: and(
-      eq(teamMembers.teamId, project.acceptedTeamId),
-      eq(teamMembers.userId, user.id)
-    ),
+    where: and(eq(teamMembers.teamId, project.acceptedTeamId), eq(teamMembers.userId, user.id)),
   });
   if (!member) return { ok: false, error: "not on the accepted team" };
 
@@ -251,10 +242,7 @@ export async function submitReport(input: {
     priorFindings.length === 0
       ? null
       : priorFindings
-          .map(
-            (r) =>
-              `(${r.reports.weekOf}) ${r.report_findings.businessTranslation}`
-          )
+          .map((r) => `(${r.reports.weekOf}) ${r.report_findings.businessTranslation}`)
           .join("\n");
 
   const qs = await db
@@ -306,6 +294,7 @@ git commit -m "feat(reports): add submitReport server action with AI-4"
 ## Task 3: `/projects/[id]/report` page
 
 **Files:**
+
 - Create: `app/(app)/projects/[id]/report/page.tsx`, `app/(app)/projects/[id]/report/_components/report-form.tsx`
 
 - [ ] **Step 1: Create the form**
@@ -479,6 +468,7 @@ git commit -m "feat(reports): add /projects/[id]/report submission page"
 ## Task 4: Alignment dashboard query
 
 **Files:**
+
 - Create: `lib/db/queries/alignment-dashboard.ts`
 
 - [ ] **Step 1: Create query**
@@ -495,10 +485,7 @@ import {
   companies,
 } from "@/lib/db/schema";
 
-export async function getAlignmentDashboard(
-  projectId: string,
-  userId: string
-) {
+export async function getAlignmentDashboard(projectId: string, userId: string) {
   const db = getDb();
   const [project] = await db
     .select({
@@ -575,6 +562,7 @@ git commit -m "feat(db): add alignment-dashboard query"
 ## Task 5: Dashboard UI components
 
 **Files:**
+
 - Create: `app/(app)/projects/[id]/dashboard/_components/question-progress.tsx`, `app/(app)/projects/[id]/dashboard/_components/translation-card.tsx`
 - Modify: `app/globals.css` (add fade-up keyframe)
 
@@ -723,6 +711,7 @@ git commit -m "feat(dashboard): add question-progress + translation-card compone
 ## Task 6: `/projects/[id]/dashboard` page
 
 **Files:**
+
 - Create: `app/(app)/projects/[id]/dashboard/page.tsx`
 
 - [ ] **Step 1: Create the page**
@@ -847,6 +836,7 @@ export default async function AlignmentDashboardPage({
 - [ ] **Step 2: Smoke-test**
 
 End-to-end:
+
 1. Researcher (on accepted team) → `/projects/<id>/report` → fill markdown → submit. Loading skeleton shows "Translating findings…", redirect to dashboard.
 2. Company → `/projects/<id>/dashboard` → see new translation cards animate in. Each shows technical finding (mono) next to business translation (serif), with impact note in gold.
 3. Per-question progress bars update.
@@ -864,6 +854,7 @@ git commit -m "feat(dashboard): add /projects/[id]/dashboard with progress + car
 ## Task 7: Cross-link the dashboard from existing screens
 
 **Files:**
+
 - Modify: `app/(app)/dashboard/_components/company-dashboard.tsx` (Plan 4) — link in-progress projects to `/dashboard` instead of `/manage`
 - Modify: `app/(app)/projects/[id]/manage/page.tsx` — when status is `in_progress`, show a "View alignment dashboard →" link
 

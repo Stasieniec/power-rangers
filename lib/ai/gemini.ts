@@ -1,4 +1,4 @@
-import { z } from "zod";
+import type { z } from "zod";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 const GEMINI_ENDPOINT =
@@ -11,19 +11,22 @@ interface GenerateOpts {
   fetchImpl?: typeof fetch; // injectable for tests
 }
 
+interface GeminiResponse {
+  candidates?: { content?: { parts?: { text?: string }[] } }[];
+}
+
 export class GeminiError extends Error {
-  constructor(message: string, public override cause?: unknown) {
+  constructor(
+    message: string,
+    public override cause?: unknown
+  ) {
     super(message);
     this.name = "GeminiError";
   }
 }
 
-export async function generate<T>(
-  schema: z.ZodSchema<T>,
-  opts: GenerateOpts
-): Promise<T> {
-  const apiKey =
-    opts.apiKey ?? getCloudflareContext().env.GEMINI_API_KEY;
+export async function generate<T>(schema: z.ZodType<T>, opts: GenerateOpts): Promise<T> {
+  const apiKey = opts.apiKey ?? getCloudflareContext().env.GEMINI_API_KEY;
   if (!apiKey) throw new GeminiError("GEMINI_API_KEY not set");
   const fetchImpl = opts.fetchImpl ?? fetch;
 
@@ -43,19 +46,19 @@ export async function generate<T>(
   });
 
   if (!res.ok) {
-    const text = await res.text();
-    throw new GeminiError(`gemini ${res.status}: ${text}`);
+    const errText = await res.text();
+    throw new GeminiError(`gemini ${String(res.status)}: ${errText}`);
   }
 
-  const json = (await res.json()) as {
-    candidates?: { content?: { parts?: { text?: string }[] } }[];
-  };
+  const rawText = await res.text();
+  const json = JSON.parse(rawText) as unknown as GeminiResponse;
+
   const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text) throw new GeminiError("no text in response");
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(text);
+    parsed = JSON.parse(text) as unknown;
   } catch (e) {
     throw new GeminiError("response was not JSON", e);
   }

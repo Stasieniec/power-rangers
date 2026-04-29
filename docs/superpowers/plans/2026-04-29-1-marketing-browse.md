@@ -60,6 +60,7 @@ public/
 ## Task 1: Public navigation shell
 
 **Files:**
+
 - Create: `components/shell/public-nav.tsx`, `components/shell/footer.tsx`, `components/shell/container.tsx`, `app/(public)/layout.tsx`
 
 - [ ] **Step 1: Create `components/shell/container.tsx`**
@@ -174,6 +175,7 @@ git commit -m "feat(shell): add public nav + footer + container"
 ## Task 2: Landing page
 
 **Files:**
+
 - Create: `components/marketing/hero.tsx`, `components/marketing/pillars.tsx`, `components/marketing/cta.tsx`, `components/marketing/circuit-pattern.tsx`, `public/pattern-circuit.svg`
 - Modify: `app/page.tsx` (move into `(marketing)` group)
 
@@ -376,6 +378,7 @@ export default function LandingPage() {
 - [ ] **Step 7: Visual smoke check**
 
 `pnpm dev`, visit `/`. Verify:
+
 - Fraunces hero header renders with the italic "posed as a competition" in a dimmer color.
 - Circuit pattern visible behind the hero, low opacity.
 - Three pillars in a 3-column grid with `01/02/03` monospace labels in cyan.
@@ -393,6 +396,7 @@ git commit -m "feat(marketing): build landing page (hero, pillars, CTA)"
 ## Task 3: Project queries (server-side data layer)
 
 **Files:**
+
 - Create: `lib/db/queries/projects.ts`, `lib/db/queries/teams.ts`, `lib/db/queries/researchers.ts`
 
 - [ ] **Step 1: Create `lib/db/queries/projects.ts`**
@@ -464,13 +468,7 @@ export async function getProjectDetail(id: string) {
 ```typescript
 import { eq, inArray } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
-import {
-  teams,
-  teamMembers,
-  users,
-  researchers,
-  researcherConcepts,
-} from "@/lib/db/schema";
+import { teams, teamMembers, users, researchers, researcherConcepts } from "@/lib/db/schema";
 
 export async function getTeamDetail(id: string) {
   const db = getDb();
@@ -491,9 +489,7 @@ export async function getTeamDetail(id: string) {
     .leftJoin(researchers, eq(researchers.userId, users.id))
     .where(eq(teamMembers.teamId, id));
 
-  const researcherIds = members
-    .map((m) => m.researcherId)
-    .filter((x): x is string => Boolean(x));
+  const researcherIds = members.map((m) => m.researcherId).filter((x): x is string => Boolean(x));
 
   let concepts: { concept: string; score: number }[] = [];
   if (researcherIds.length > 0) {
@@ -570,6 +566,7 @@ git commit -m "feat(db): add public read queries for projects, teams, researcher
 ## Task 4: Public projects list page
 
 **Files:**
+
 - Create: `components/project/project-card.tsx`, `app/(public)/projects/page.tsx`
 
 - [ ] **Step 1: Create `components/project/project-card.tsx`**
@@ -661,6 +658,7 @@ git commit -m "feat(public): add /projects list page"
 ## Task 5: Public project detail page
 
 **Files:**
+
 - Create: `components/project/research-question-card.tsx`, `components/project/project-meta.tsx`, `app/(public)/projects/[id]/page.tsx`
 
 - [ ] **Step 1: Create `components/project/research-question-card.tsx`**
@@ -834,6 +832,7 @@ git commit -m "feat(public): add /projects/[id] detail page"
 ## Task 6: Public team page
 
 **Files:**
+
 - Create: `components/team/expertise-cloud.tsx`, `components/researcher/researcher-card.tsx`, `app/(public)/teams/[id]/page.tsx`
 
 - [ ] **Step 1: Create `components/team/expertise-cloud.tsx`**
@@ -997,6 +996,7 @@ git commit -m "feat(public): add /teams/[id] page"
 ## Task 7: Public researcher profile page
 
 **Files:**
+
 - Create: `components/researcher/publication-list.tsx`, `components/researcher/expertise-tags.tsx`, `app/(public)/researchers/[id]/page.tsx`
 
 - [ ] **Step 1: Create `components/researcher/publication-list.tsx`**
@@ -1179,6 +1179,7 @@ git commit -m "feat(public): add /researchers/[id] page"
 ## Task 8: 404 + loading states
 
 **Files:**
+
 - Create: `app/not-found.tsx`, `app/(public)/projects/[id]/loading.tsx`, `app/(public)/teams/[id]/loading.tsx`, `app/(public)/researchers/[id]/loading.tsx`
 
 - [ ] **Step 1: Create `app/not-found.tsx`**
