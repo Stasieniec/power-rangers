@@ -1,0 +1,6 @@
+# Default — replace with real GitHub handles for the four team members
+*                  @stas-default
+/lib/ai/           @ai-owner
+/lib/db/           @db-owner
+/components/       @ui-owner
+/app/              @app-owner
