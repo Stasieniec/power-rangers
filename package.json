@@ -13,7 +13,10 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate:staging": "wrangler d1 migrations apply polymath-staging --remote",
     "db:migrate:prod": "wrangler d1 migrations apply polymath-prod --remote",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",
@@ -25,7 +28,8 @@
     "next": "16.2.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "tailwind-merge": "^3.5.0"
+    "tailwind-merge": "^3.5.0",
+    "zod": "^4.3.6"
   },
   "engines": {
     "node": ">=22.0.0"
@@ -37,9 +41,11 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.5",
     "drizzle-kit": "^0.31.10",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "vitest": "^4.1.5",
     "wrangler": "^4.86.0"
   }
 }

@@ -7,6 +7,7 @@ declare namespace Cloudflare {
 		UPLOADS: R2Bucket;
 		DB: D1Database;
 		ASSETS: Fetcher;
+		GEMINI_API_KEY: string;
 		NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "REPLACE_WITH_PROD_CLERK_PK";
 		NEXT_PUBLIC_APP_ENV: "production";
 	}
@@ -15,6 +16,7 @@ declare namespace Cloudflare {
 		UPLOADS: R2Bucket;
 		DB: D1Database;
 		ASSETS: Fetcher;
+		GEMINI_API_KEY: string;
 		NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "REPLACE_WITH_PROD_CLERK_PK" | "REPLACE_WITH_STAGING_CLERK_PK";
 		NEXT_PUBLIC_APP_ENV: "production" | "staging";
 	}
