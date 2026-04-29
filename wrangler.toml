@@ -43,7 +43,7 @@ binding = "KV"
 id = "d15eed8198414f26aca2707b494b5beb"
 
 [vars]
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "REPLACE_WITH_STAGING_CLERK_PK"
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_dG91Z2gtc25pcGUtMjAuY2xlcmsuYWNjb3VudHMuZGV2JA"
 NEXT_PUBLIC_APP_ENV = "staging"
 
 [env.production.vars]
