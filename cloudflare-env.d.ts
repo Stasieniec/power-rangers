@@ -8,6 +8,8 @@ declare namespace Cloudflare {
     DB: D1Database;
     ASSETS: Fetcher;
     GEMINI_API_KEY: string;
+    CLERK_SECRET_KEY: string;
+    CLERK_WEBHOOK_SECRET: string;
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "REPLACE_WITH_PROD_CLERK_PK";
     NEXT_PUBLIC_APP_ENV: "production";
   }
@@ -17,6 +19,8 @@ declare namespace Cloudflare {
     DB: D1Database;
     ASSETS: Fetcher;
     GEMINI_API_KEY: string;
+    CLERK_SECRET_KEY: string;
+    CLERK_WEBHOOK_SECRET: string;
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       | "REPLACE_WITH_PROD_CLERK_PK"
       | "REPLACE_WITH_STAGING_CLERK_PK";
