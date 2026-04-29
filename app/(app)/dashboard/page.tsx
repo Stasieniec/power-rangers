@@ -5,6 +5,8 @@ import { Container } from "@/components/shell/container";
 import { Button } from "@/components/ui/button";
 import { syncUser } from "@/lib/auth/sync-user";
 import { getResearcherDashboard } from "@/lib/db/queries/dashboard";
+import { getCompanyDashboard } from "@/lib/db/queries/company-dashboard";
+import { CompanyDashboard } from "./_components/company-dashboard";
 
 export default async function DashboardPage() {
   const { userId } = await auth();
@@ -14,18 +16,8 @@ export default async function DashboardPage() {
   const user = await syncUser(clerkUser);
 
   if (user.role === "company") {
-    // Company dashboard is rendered in Plan 4. For now: link to projects.
-    return (
-      <main className="py-16">
-        <Container>
-          <h1 className="font-display text-4xl">Welcome, {user.displayName}</h1>
-          <p className="text-text-dim mt-3">Company dashboard arrives next plan.</p>
-          <Button asChild className="mt-6">
-            <Link href="/projects/new">Post a project →</Link>
-          </Button>
-        </Container>
-      </main>
-    );
+    const { projects } = await getCompanyDashboard(user.id);
+    return <CompanyDashboard displayName={user.displayName} projects={projects} />;
   }
 
   const { researcher, teams, applications } = await getResearcherDashboard(user.id);
