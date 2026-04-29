@@ -9,13 +9,18 @@
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy:staging": "opennextjs-cloudflare build && wrangler deploy",
     "deploy:prod": "opennextjs-cloudflare build && wrangler deploy --env production",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:staging": "wrangler d1 migrations apply polymath-staging --remote",
+    "db:migrate:prod": "wrangler d1 migrations apply polymath-prod --remote",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "drizzle-orm": "^0.45.2",
     "lucide-react": "^1.14.0",
     "next": "16.2.4",
     "react": "19.2.4",
@@ -26,11 +31,13 @@
     "node": ">=22.0.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260426.1",
     "@opennextjs/cloudflare": "^1.19.4",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.10",
     "tailwindcss": "^4",
     "typescript": "^5",
     "wrangler": "^4.86.0"
