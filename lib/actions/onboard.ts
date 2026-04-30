@@ -35,16 +35,30 @@ export async function onboardResearcher(input: OnboardInput): Promise<OnboardRes
 
   // 1. Resolve author
   let author = null;
-  if (input.orcid) {
-    author = await fetchAuthorByOrcid(input.orcid, oaOpts);
+  try {
+    if (input.orcid) {
+      author = await fetchAuthorByOrcid(input.orcid, oaOpts);
+    }
+    if (!author && input.name) {
+      author = await fetchAuthorByName(input.name, input.affiliation, oaOpts);
+    }
+  } catch (e) {
+    console.error("[onboard] OpenAlex fetch failed", e);
+    return { ok: false, error: `OpenAlex error: ${e instanceof Error ? e.message : String(e)}` };
   }
-  if (!author && input.name) {
-    author = await fetchAuthorByName(input.name, input.affiliation, oaOpts);
-  }
-  if (!author) return { ok: false, error: "could not find author" };
+  if (!author) return { ok: false, error: "could not find author on OpenAlex" };
 
   // 2. Fetch top works
-  const works = await fetchAuthorWorks(author.id, 20, oaOpts);
+  let works;
+  try {
+    works = await fetchAuthorWorks(author.id, 20, oaOpts);
+  } catch (e) {
+    console.error("[onboard] OpenAlex works fetch failed", e);
+    return {
+      ok: false,
+      error: `OpenAlex works error: ${e instanceof Error ? e.message : String(e)}`,
+    };
+  }
 
   // 3. AI summary
   const concepts = author.x_concepts.map((c) => ({
@@ -56,72 +70,86 @@ export async function onboardResearcher(input: OnboardInput): Promise<OnboardRes
     year: w.publication_year,
     abstract: reconstructAbstract(w.abstract_inverted_index),
   }));
-  const summary = await summarizeResearcher({
-    displayName: author.display_name,
-    affiliation: author.last_known_institution?.display_name ?? input.affiliation ?? null,
-    concepts,
-    topPublications,
-  });
+  let summary;
+  try {
+    summary = await summarizeResearcher({
+      displayName: author.display_name,
+      affiliation: author.last_known_institution?.display_name ?? input.affiliation ?? null,
+      concepts,
+      topPublications,
+    });
+  } catch (e) {
+    console.error("[onboard] Gemini summarize failed", e);
+    return {
+      ok: false,
+      error: `AI summarize error: ${e instanceof Error ? e.message : String(e)}`,
+    };
+  }
 
   // 4. Write to DB
-  const db = getDb();
-  const existing = await db.query.researchers.findFirst({
-    where: eq(researchers.userId, user.id),
-  });
-  const researcherId = existing?.id ?? uuidv7();
-
-  if (!existing) {
-    await db.insert(researchers).values({
-      id: researcherId,
-      userId: user.id,
-      openalexId: author.id,
-      orcid: author.orcid ?? input.orcid ?? null,
-      affiliation: author.last_known_institution?.display_name ?? input.affiliation ?? null,
-      headline: summary.headline,
-      aiSummary: summary.summary,
+  try {
+    const db = getDb();
+    const existing = await db.query.researchers.findFirst({
+      where: eq(researchers.userId, user.id),
     });
-  } else {
-    await db
-      .update(researchers)
-      .set({
+    const researcherId = existing?.id ?? uuidv7();
+
+    if (!existing) {
+      await db.insert(researchers).values({
+        id: researcherId,
+        userId: user.id,
         openalexId: author.id,
         orcid: author.orcid ?? input.orcid ?? null,
         affiliation: author.last_known_institution?.display_name ?? input.affiliation ?? null,
         headline: summary.headline,
         aiSummary: summary.summary,
-      })
-      .where(eq(researchers.id, researcherId));
-    await db.delete(publications).where(eq(publications.researcherId, researcherId));
-    await db.delete(researcherConcepts).where(eq(researcherConcepts.researcherId, researcherId));
-  }
+      });
+    } else {
+      await db
+        .update(researchers)
+        .set({
+          openalexId: author.id,
+          orcid: author.orcid ?? input.orcid ?? null,
+          affiliation: author.last_known_institution?.display_name ?? input.affiliation ?? null,
+          headline: summary.headline,
+          aiSummary: summary.summary,
+        })
+        .where(eq(researchers.id, researcherId));
+      await db.delete(publications).where(eq(publications.researcherId, researcherId));
+      await db.delete(researcherConcepts).where(eq(researcherConcepts.researcherId, researcherId));
+    }
 
-  if (works.length > 0) {
-    await db.insert(publications).values(
-      works.map((w) => ({
-        id: uuidv7(),
-        researcherId,
-        openalexWorkId: w.id,
-        title: w.title ?? w.display_name ?? "(untitled)",
-        year: w.publication_year,
-        venue: w.primary_location?.source?.display_name ?? null,
-        abstract: reconstructAbstract(w.abstract_inverted_index),
-        citationCount: w.cited_by_count,
-        doi: w.doi,
-      }))
-    );
-  }
+    if (works.length > 0) {
+      await db.insert(publications).values(
+        works.map((w) => ({
+          id: uuidv7(),
+          researcherId,
+          openalexWorkId: w.id,
+          title: w.title ?? w.display_name ?? "(untitled)",
+          year: w.publication_year,
+          venue: w.primary_location?.source?.display_name ?? null,
+          abstract: reconstructAbstract(w.abstract_inverted_index),
+          citationCount: w.cited_by_count,
+          doi: w.doi,
+        }))
+      );
+    }
 
-  // Persist AI-derived expertise tags as our authoritative concept set.
-  if (summary.expertise_tags.length > 0) {
-    await db.insert(researcherConcepts).values(
-      summary.expertise_tags.map((t) => ({
-        id: uuidv7(),
-        researcherId,
-        concept: t.label,
-        score: t.weight,
-      }))
-    );
-  }
+    // Persist AI-derived expertise tags as our authoritative concept set.
+    if (summary.expertise_tags.length > 0) {
+      await db.insert(researcherConcepts).values(
+        summary.expertise_tags.map((t) => ({
+          id: uuidv7(),
+          researcherId,
+          concept: t.label,
+          score: t.weight,
+        }))
+      );
+    }
 
-  return { ok: true, researcherId };
+    return { ok: true, researcherId };
+  } catch (e) {
+    console.error("[onboard] DB write failed", e);
+    return { ok: false, error: `DB write error: ${e instanceof Error ? e.message : String(e)}` };
+  }
 }
