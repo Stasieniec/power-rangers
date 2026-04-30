@@ -2,7 +2,7 @@ import type { z } from "zod";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 const GEMINI_ENDPOINT =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent";
 
 interface GenerateOpts {
   system: string;
