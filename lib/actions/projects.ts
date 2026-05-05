@@ -2,10 +2,9 @@
 
 import { v7 as uuidv7 } from "uuid";
 import { eq, and } from "drizzle-orm";
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db/client";
-import { syncUser } from "@/lib/auth/sync-user";
+import { getCurrentDbUser } from "@/lib/auth/current-user";
 import { projects, researchQuestions, companies } from "@/lib/db/schema";
 import { generateQuestions } from "@/lib/ai/prompts/generate-questions";
 
@@ -29,11 +28,8 @@ export async function createDraftProject(input: {
   businessPlan: string;
   endGoal: string;
 }): Promise<{ ok: true; projectId: string } | { ok: false; error: string }> {
-  const { userId } = await auth();
-  if (!userId) return { ok: false, error: "not signed in" };
-  const clerkUser = await currentUser();
-  if (!clerkUser) return { ok: false, error: "not signed in" };
-  const user = await syncUser(clerkUser);
+  const user = await getCurrentDbUser();
+  if (!user) return { ok: false, error: "not signed in" };
   if (user.role !== "company") return { ok: false, error: "only companies can post projects" };
 
   const company = await ensureCompany(user.id);
@@ -78,11 +74,8 @@ export async function createDraftProject(input: {
 export async function regenerateQuestions(
   projectId: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const { userId } = await auth();
-  if (!userId) return { ok: false, error: "not signed in" };
-  const clerkUser = await currentUser();
-  if (!clerkUser) return { ok: false, error: "not signed in" };
-  const user = await syncUser(clerkUser);
+  const user = await getCurrentDbUser();
+  if (!user) return { ok: false, error: "not signed in" };
 
   const db = getDb();
   const [project] = await db
@@ -124,11 +117,8 @@ export async function updateQuestion(input: {
   question: string;
   rationale: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  const { userId } = await auth();
-  if (!userId) return { ok: false, error: "not signed in" };
-  const clerkUser = await currentUser();
-  if (!clerkUser) return { ok: false, error: "not signed in" };
-  const user = await syncUser(clerkUser);
+  const user = await getCurrentDbUser();
+  if (!user) return { ok: false, error: "not signed in" };
 
   const db = getDb();
   const [project] = await db
@@ -157,11 +147,8 @@ export async function updateQuestion(input: {
 export async function publishProject(
   projectId: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const { userId } = await auth();
-  if (!userId) return { ok: false, error: "not signed in" };
-  const clerkUser = await currentUser();
-  if (!clerkUser) return { ok: false, error: "not signed in" };
-  const user = await syncUser(clerkUser);
+  const user = await getCurrentDbUser();
+  if (!user) return { ok: false, error: "not signed in" };
 
   const db = getDb();
   const [project] = await db

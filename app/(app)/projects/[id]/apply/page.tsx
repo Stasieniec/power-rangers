@@ -1,18 +1,13 @@
 import { notFound, redirect } from "next/navigation";
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { Container } from "@/components/shell/container";
-import { syncUser } from "@/lib/auth/sync-user";
+import { requireDbUser } from "@/lib/auth/current-user";
 import { getProjectDetail } from "@/lib/db/queries/projects";
 import { getEligibleTeamsForProject } from "@/lib/db/queries/eligible-teams";
 import { ApplyForm } from "./_components/apply-form";
 
 export default async function ApplyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-  const clerkUser = await currentUser();
-  if (!clerkUser) redirect("/sign-in");
-  const user = await syncUser(clerkUser);
+  const user = await requireDbUser();
   if (user.role !== "researcher") redirect("/dashboard");
 
   const project = await getProjectDetail(id);

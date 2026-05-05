@@ -1,19 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { Container } from "@/components/shell/container";
 import { Button } from "@/components/ui/button";
-import { syncUser } from "@/lib/auth/sync-user";
+import { requireDbUser } from "@/lib/auth/current-user";
 import { getResearcherDashboard } from "@/lib/db/queries/dashboard";
 import { getCompanyDashboard } from "@/lib/db/queries/company-dashboard";
 import { CompanyDashboard } from "./_components/company-dashboard";
 
 export default async function DashboardPage() {
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-  const clerkUser = await currentUser();
-  if (!clerkUser) redirect("/sign-in");
-  const user = await syncUser(clerkUser);
+  const user = await requireDbUser();
 
   if (user.role === "company") {
     const { projects } = await getCompanyDashboard(user.id);

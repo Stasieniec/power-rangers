@@ -15,7 +15,15 @@ const isProtectedRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) await auth.protect();
+  // The demo-impersonation cookie satisfies the auth gate without going
+  // through Clerk. Server components/actions read this cookie via
+  // getCurrentDbUser() and resolve the impersonated user.
+  const demoUserCookie = req.cookies.get("polymath-demo-user")?.value;
+  const hasDemoSession = !!demoUserCookie;
+
+  if (isProtectedRoute(req) && !hasDemoSession) {
+    await auth.protect();
+  }
 
   const useFallback = req.nextUrl.searchParams.get("demo") === "fallback";
   if (useFallback) {

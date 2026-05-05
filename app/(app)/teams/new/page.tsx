@@ -1,20 +1,13 @@
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { Container } from "@/components/shell/container";
 import { CreateTeamForm } from "./_components/create-team-form";
-import { syncUser } from "@/lib/auth/sync-user";
+import { requireDbUser } from "@/lib/auth/current-user";
 import { getDb } from "@/lib/db/client";
 import { researchers } from "@/lib/db/schema";
 
 export default async function NewTeamPage() {
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-
-  const clerkUser = await currentUser();
-  if (!clerkUser) redirect("/sign-in");
-
-  const user = await syncUser(clerkUser);
+  const user = await requireDbUser();
   if (user.role !== "researcher") redirect("/dashboard");
 
   // require a researcher profile first

@@ -1,15 +1,9 @@
-import { redirect } from "next/navigation";
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { Container } from "@/components/shell/container";
-import { syncUser } from "@/lib/auth/sync-user";
+import { requireDbUser } from "@/lib/auth/current-user";
 import { RoleButtons } from "./_components/role-buttons";
 
 export default async function PickRolePage() {
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-  const clerkUser = await currentUser();
-  if (!clerkUser) redirect("/sign-in");
-  await syncUser(clerkUser);
+  await requireDbUser();
 
   return (
     <main className="py-24">

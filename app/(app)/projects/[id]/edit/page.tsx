@@ -1,7 +1,6 @@
 import { notFound, redirect } from "next/navigation";
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { Container } from "@/components/shell/container";
-import { syncUser } from "@/lib/auth/sync-user";
+import { requireDbUser } from "@/lib/auth/current-user";
 import { getProjectForEdit } from "@/lib/db/queries/project-edit";
 import { QuestionsEditor } from "./_components/questions-editor";
 import { RegenerateButton } from "./_components/regenerate-button";
@@ -9,11 +8,7 @@ import { PublishButton } from "./_components/publish-button";
 
 export default async function EditProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-  const clerkUser = await currentUser();
-  if (!clerkUser) redirect("/sign-in");
-  const user = await syncUser(clerkUser);
+  const user = await requireDbUser();
 
   const data = await getProjectForEdit(id, user.id);
   if (!data) notFound();

@@ -1,10 +1,10 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { PublicNav } from "@/components/shell/public-nav";
+import { getCurrentDbUser } from "@/lib/auth/current-user";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
+  const user = await getCurrentDbUser();
+  if (!user) redirect("/sign-in");
   return (
     <>
       <PublicNav />

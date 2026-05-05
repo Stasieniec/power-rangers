@@ -2,10 +2,9 @@
 
 import { v7 as uuidv7 } from "uuid";
 import { eq } from "drizzle-orm";
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb } from "@/lib/db/client";
-import { syncUser } from "@/lib/auth/sync-user";
+import { getCurrentDbUser } from "@/lib/auth/current-user";
 import { researchers, publications, researcherConcepts } from "@/lib/db/schema";
 import {
   fetchAuthorByOrcid,
@@ -24,11 +23,8 @@ interface OnboardInput {
 export type OnboardResult = { ok: true; researcherId: string } | { ok: false; error: string };
 
 export async function onboardResearcher(input: OnboardInput): Promise<OnboardResult> {
-  const { userId: clerkId } = await auth();
-  if (!clerkId) return { ok: false, error: "not signed in" };
-  const clerkUser = await currentUser();
-  if (!clerkUser) return { ok: false, error: "not signed in" };
-  const user = await syncUser(clerkUser);
+  const user = await getCurrentDbUser();
+  if (!user) return { ok: false, error: "not signed in" };
 
   const { env } = getCloudflareContext();
   const oaOpts = { kv: env.KV, email: env.OPENALEX_EMAIL };
