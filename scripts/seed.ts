@@ -113,20 +113,21 @@ export async function runSeed() {
       headline: summary.headline,
       aiSummary: summary.summary,
     });
-    if (works.length > 0) {
-      await db.insert(schema.publications).values(
-        works.map((w) => ({
-          id: uuidv7(),
-          researcherId,
-          openalexWorkId: w.id,
-          title: w.title ?? w.display_name ?? "(untitled)",
-          year: w.publication_year,
-          venue: w.primary_location?.source?.display_name ?? null,
-          abstract: reconstructAbstract(w.abstract_inverted_index),
-          citationCount: w.cited_by_count,
-          doi: w.doi,
-        }))
-      );
+    // D1 has a ~100KB SQL statement limit. Some abstracts are several KB, so
+    // 20 publications in one batch can blow past it. Insert one row at a time
+    // to stay safely under the limit.
+    for (const w of works) {
+      await db.insert(schema.publications).values({
+        id: uuidv7(),
+        researcherId,
+        openalexWorkId: w.id,
+        title: w.title ?? w.display_name ?? "(untitled)",
+        year: w.publication_year,
+        venue: w.primary_location?.source?.display_name ?? null,
+        abstract: reconstructAbstract(w.abstract_inverted_index),
+        citationCount: w.cited_by_count,
+        doi: w.doi,
+      });
     }
     if (summary.expertise_tags.length > 0) {
       await db.insert(schema.researcherConcepts).values(
