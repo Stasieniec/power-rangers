@@ -77,7 +77,6 @@ export async function runSeed() {
 
   // 4. Researchers — fetch OpenAlex + run AI-2 for each
   for (const u of RESEARCHER_USERS) {
-    if (!u.onboarded) continue;
     note(`researcher: ${u.displayName}`);
     const author = await fetchAuthorByOrcid(u.orcid, oaOpts);
     if (!author) {
