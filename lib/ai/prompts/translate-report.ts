@@ -12,17 +12,32 @@ You receive:
 - Optional summary of findings from prior weeks.
 - This week's free-form markdown report from the research team.
 
-You produce a list of "findings", each:
-- "research_question_id": the ID of the question this finding addresses (must be in the provided list).
-- "finding": the technical result, one or two sentences, in the researchers' own terms (drawn directly from the report).
-- "business_translation": one or two sentences in plain business language explaining what this means for the company's goal. Avoid jargon. No metrics the report doesn't actually contain.
-- "impact_note": a short phrase about timeline, cost, or risk implications. Examples: "+1 week to timeline", "Suggests pivot on Q3", "On track", "No impact yet — exploratory".
+OUTPUT SHAPE: a JSON OBJECT (not an array) with exactly one top-level key, "findings", whose value is an array of finding objects.
+
+Each finding object has EXACTLY these four fields:
+- "research_question_id": string. ID of the question this finding addresses (must match an ID from the provided list).
+- "finding": string. The technical result, 1-2 sentences, in the researchers' own terms (drawn from the report).
+- "business_translation": string. 1-2 sentences in plain business language explaining what this means for the company's goal. Avoid jargon. No metrics the report doesn't actually contain.
+- "impact_note": string. A short phrase about timeline, cost, or risk implications. Examples: "+1 week to timeline", "Suggests pivot on Q3", "On track", "No impact yet — exploratory".
 
 Rules:
 - Only emit findings that the report actually supports.
 - Skip questions with no progress this week — don't fabricate.
 - Maintain the report's level of certainty; don't claim more than it does.
-- Output strict JSON matching the response schema.`;
+
+EXAMPLE OUTPUT:
+{
+  "findings": [
+    {
+      "research_question_id": "rq_abc123",
+      "finding": "Held-out C-index improved from 0.71 to 0.78 after adding 7 claim-derived features.",
+      "business_translation": "The model is now substantially more accurate at ranking patients by drop-off risk; cleared the soft target for production.",
+      "impact_note": "On track"
+    }
+  ]
+}
+
+Output ONLY the JSON object. No prose, no code fences.`;
 
 export interface TranslateReportInput {
   endGoal: string;
