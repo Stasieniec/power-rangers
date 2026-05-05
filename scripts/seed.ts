@@ -1,6 +1,5 @@
 import { v7 as uuidv7 } from "uuid";
 import { eq } from "drizzle-orm";
-import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb } from "@/lib/db/client";
 import * as schema from "@/lib/db/schema";
 import { COMPANY } from "./fixtures/companies";
@@ -8,8 +7,14 @@ import { RESEARCHER_USERS } from "./fixtures/users";
 import { TEAMS } from "./fixtures/teams";
 import { PROJECTS } from "./fixtures/projects";
 import { REPORTS } from "./fixtures/reports";
-import { fetchAuthorByOrcid, fetchAuthorWorks, reconstructAbstract } from "@/lib/openalex/client";
+import { reconstructAbstract } from "@/lib/openalex/client";
 import { summarizeResearcher } from "@/lib/ai/prompts/summarize-researcher";
+import type { OAAuthor, OAWork } from "@/lib/openalex/types";
+// Pre-fetched OpenAlex payloads. Bundled because Cloudflare Workers' egress IPs
+// get rate-limited aggressively by OpenAlex; fetching at seed time is unreliable.
+import openalexBundle from "./fixtures/openalex-bundle.json";
+
+const BUNDLE = openalexBundle as Record<string, { author: OAAuthor; works: OAWork[] }>;
 import { generateQuestions } from "@/lib/ai/prompts/generate-questions";
 import { translateReport } from "@/lib/ai/prompts/translate-report";
 import { scoreMatchRationale } from "@/lib/ai/prompts/score-match";
@@ -17,8 +22,6 @@ import { scoreMatch } from "@/lib/match/score";
 
 export async function runSeed() {
   const db = getDb();
-  const { env } = getCloudflareContext();
-  const oaOpts = { kv: env.KV, email: env.OPENALEX_EMAIL };
   const log: string[] = [];
   const note = (s: string) => {
     console.log("[seed]", s);
@@ -75,15 +78,16 @@ export async function runSeed() {
     website: COMPANY.website,
   });
 
-  // 4. Researchers — fetch OpenAlex + run AI-2 for each
+  // 4. Researchers — read bundled OpenAlex payloads + run AI-2 for each
   for (const u of RESEARCHER_USERS) {
     note(`researcher: ${u.displayName}`);
-    const author = await fetchAuthorByOrcid(u.orcid, oaOpts);
-    if (!author) {
-      note(`  WARN: no OpenAlex author for ${u.orcid}`);
+    const bundled = BUNDLE[u.id];
+    if (!bundled) {
+      note(`  WARN: no bundled OpenAlex data for ${u.id}`);
       continue;
     }
-    const works = await fetchAuthorWorks(author.id, 20, oaOpts);
+    const author = bundled.author;
+    const works = bundled.works;
     const concepts = author.x_concepts.map((c) => ({
       label: c.display_name,
       weight: c.score,
