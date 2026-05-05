@@ -35,8 +35,9 @@ describe("generate", () => {
     expect(out).toEqual({ greeting: "hello" });
   });
 
-  it("throws GeminiError on non-200", async () => {
-    const fetchImpl = mockFetch({ error: "rate limited" }, 429);
+  it("throws GeminiError on non-retryable 4xx", async () => {
+    // 400 is not retried; 429/5xx would be (those would time out the test).
+    const fetchImpl = mockFetch({ error: "bad request" }, 400);
     await expect(
       generate(schema, {
         system: "s",

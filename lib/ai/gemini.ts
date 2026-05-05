@@ -30,42 +30,57 @@ export async function generate<T>(schema: z.ZodType<T>, opts: GenerateOpts): Pro
   if (!apiKey) throw new GeminiError("GEMINI_API_KEY not set");
   const fetchImpl = opts.fetchImpl ?? fetch;
 
-  const body = {
-    systemInstruction: { parts: [{ text: opts.system }] },
-    contents: [{ role: "user", parts: [{ text: opts.prompt }] }],
-    generationConfig: {
-      responseMimeType: "application/json",
-      temperature: 0.4,
-    },
-  };
+  // Try up to 3 times. Gemini occasionally emits JSON that doesn't match the
+  // schema (wrong field names, missing required keys); a fresh sample usually
+  // gets it right. Keep temperature stable; the variation comes from sampling.
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const body = {
+      systemInstruction: { parts: [{ text: opts.system }] },
+      contents: [{ role: "user", parts: [{ text: opts.prompt }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        temperature: 0.4,
+      },
+    };
 
-  const res = await fetchImpl(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
-  });
+    const res = await fetchImpl(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
 
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new GeminiError(`gemini ${String(res.status)}: ${errText}`);
+    if (!res.ok) {
+      const errText = await res.text();
+      // 429 / 5xx are transient; retry. 4xx other than 429 won't recover.
+      if (res.status === 429 || res.status >= 500) {
+        lastErr = new GeminiError(`gemini ${String(res.status)}: ${errText}`);
+        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+        continue;
+      }
+      throw new GeminiError(`gemini ${String(res.status)}: ${errText}`);
+    }
+
+    const rawText = await res.text();
+    const json = JSON.parse(rawText) as unknown as GeminiResponse;
+    const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) {
+      lastErr = new GeminiError("no text in response");
+      continue;
+    }
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(text) as unknown;
+    } catch (e) {
+      lastErr = new GeminiError("response was not JSON", e);
+      continue;
+    }
+
+    const result = schema.safeParse(parsed);
+    if (result.success) return result.data;
+    lastErr = new GeminiError(`schema mismatch: ${result.error.message}`);
+    // Loop and try again with fresh sampling.
   }
-
-  const rawText = await res.text();
-  const json = JSON.parse(rawText) as unknown as GeminiResponse;
-
-  const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new GeminiError("no text in response");
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text) as unknown;
-  } catch (e) {
-    throw new GeminiError("response was not JSON", e);
-  }
-
-  const result = schema.safeParse(parsed);
-  if (!result.success) {
-    throw new GeminiError(`schema mismatch: ${result.error.message}`);
-  }
-  return result.data;
+  throw lastErr instanceof Error ? lastErr : new GeminiError("retry exhausted");
 }

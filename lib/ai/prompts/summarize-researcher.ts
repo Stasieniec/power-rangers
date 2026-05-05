@@ -6,12 +6,17 @@ import type { z } from "zod";
 
 const SYSTEM = `You are an expert science communicator. Given an author's publication concepts and the titles+abstracts of their most-cited recent papers, you produce a concise expertise profile that helps non-experts (business stakeholders) understand what this researcher is good at.
 
-Rules:
-- Headline: a single phrase (no period) describing their central expertise. 4-9 words.
-- Summary: 2 sentences. First sentence states what they study. Second sentence states what they're known for or where they apply it.
-- expertise_tags: 5-10 tags drawn FROM the provided concept list (exact strings), ranked by relevance, each with weight 0..1.
-- Do not invent expertise outside the source data.
-- Output strict JSON matching the response schema. No prose.`;
+OUTPUT a JSON object with EXACTLY these top-level fields:
+- "headline": string. A single phrase (no period) describing their central expertise. 4-9 words.
+- "summary": string. 2 sentences. First sentence states what they study. Second sentence states what they're known for or where they apply it.
+- "expertise_tags": array of objects, each with EXACTLY these two fields:
+    - "label": string — the concept name, drawn FROM the provided concept list (exact strings).
+    - "weight": number between 0 and 1 — relevance ranking.
+  5 to 10 entries, ranked by relevance.
+
+Example expertise_tags entry: {"label": "Machine learning", "weight": 0.9}
+
+Do not invent expertise outside the source data. Do not use field names other than "label" and "weight" inside expertise_tags. Output strict JSON. No prose.`;
 
 export interface SummarizeInput {
   displayName: string;
