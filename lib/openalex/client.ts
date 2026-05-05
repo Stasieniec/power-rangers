@@ -28,11 +28,37 @@ async function getCached<T>(
 }
 
 async function oaFetch<T>(url: string, fetchImpl: typeof fetch, email: string): Promise<T> {
-  const res = await fetchImpl(url, {
-    headers: { "user-agent": ua(email) },
-  });
-  if (!res.ok) throw new Error(`openalex ${String(res.status)}`);
-  return JSON.parse(await res.text()) as T;
+  // OpenAlex sometimes 429s (and occasionally 5xx). Retry with backoff so the
+  // seed run doesn't fail because of one transient rate-limit blip.
+  const delays = [500, 1500, 4000, 8000];
+  let lastErr: unknown;
+  for (let attempt = 0; attempt <= delays.length; attempt++) {
+    try {
+      const res = await fetchImpl(url, {
+        headers: { "user-agent": ua(email) },
+      });
+      if (res.status === 429 || res.status >= 500) {
+        lastErr = new Error(`openalex ${String(res.status)}`);
+        const delay = delays[attempt];
+        if (delay !== undefined) {
+          await new Promise((r) => setTimeout(r, delay));
+          continue;
+        }
+        throw lastErr;
+      }
+      if (!res.ok) throw new Error(`openalex ${String(res.status)}`);
+      return JSON.parse(await res.text()) as T;
+    } catch (e) {
+      lastErr = e;
+      const delay = delays[attempt];
+      if (delay !== undefined && (e as { message?: string }).message?.includes("openalex")) {
+        await new Promise((r) => setTimeout(r, delay));
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error("openalex retry exhausted");
 }
 
 export async function fetchAuthorByOrcid(orcid: string, opts: Opts): Promise<OAAuthor | null> {
