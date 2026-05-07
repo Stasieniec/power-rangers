@@ -1,9 +1,8 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { Container } from "@/components/shell/container";
 import { Button } from "@/components/ui/button";
-import { syncUser } from "@/lib/auth/sync-user";
+import { requireDbUser } from "@/lib/auth/current-user";
 import { getAlignmentDashboard } from "@/lib/db/queries/alignment-dashboard";
 import { QuestionProgress } from "./_components/question-progress";
 import { TranslationCard } from "./_components/translation-card";
@@ -14,11 +13,7 @@ export default async function AlignmentDashboardPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-  const clerkUser = await currentUser();
-  if (!clerkUser) redirect("/sign-in");
-  const user = await syncUser(clerkUser);
+  const user = await requireDbUser();
 
   const data = await getAlignmentDashboard(id, user.id);
   if (!data) notFound();

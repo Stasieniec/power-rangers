@@ -1,21 +1,14 @@
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { Container } from "@/components/shell/container";
 import { OrcidForm } from "./_components/orcid-form";
 import { DemoPicker } from "./_components/demo-picker";
-import { syncUser } from "@/lib/auth/sync-user";
+import { requireDbUser } from "@/lib/auth/current-user";
 import { getDb } from "@/lib/db/client";
 import { researchers } from "@/lib/db/schema";
 
 export default async function OnboardPage() {
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-
-  const clerkUser = await currentUser();
-  if (!clerkUser) redirect("/sign-in");
-
-  const user = await syncUser(clerkUser);
+  const user = await requireDbUser();
   if (user.role === "company") redirect("/dashboard");
 
   const existing = await getDb().query.researchers.findFirst({

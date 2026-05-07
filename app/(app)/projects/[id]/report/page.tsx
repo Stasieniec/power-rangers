@@ -1,19 +1,14 @@
 import { notFound, redirect } from "next/navigation";
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { eq, and } from "drizzle-orm";
 import { Container } from "@/components/shell/container";
-import { syncUser } from "@/lib/auth/sync-user";
+import { requireDbUser } from "@/lib/auth/current-user";
 import { getDb } from "@/lib/db/client";
 import { projects, teamMembers } from "@/lib/db/schema";
 import { ReportForm } from "./_components/report-form";
 
 export default async function ReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-  const clerkUser = await currentUser();
-  if (!clerkUser) redirect("/sign-in");
-  const user = await syncUser(clerkUser);
+  const user = await requireDbUser();
 
   const db = getDb();
   const [project] = await db.select().from(projects).where(eq(projects.id, id)).limit(1);

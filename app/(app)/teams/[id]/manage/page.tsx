@@ -1,21 +1,16 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { Container } from "@/components/shell/container";
 import { Button } from "@/components/ui/button";
-import { syncUser } from "@/lib/auth/sync-user";
+import { requireDbUser } from "@/lib/auth/current-user";
 import { getTeamForManage } from "@/lib/db/queries/team-manage";
 import { InviteLinkCard } from "./_components/invite-link-card";
 import { MemberList } from "./_components/member-list";
 
 export default async function TeamManagePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-  const clerkUser = await currentUser();
-  if (!clerkUser) redirect("/sign-in");
-  const user = await syncUser(clerkUser);
+  const user = await requireDbUser();
 
   const data = await getTeamForManage(id, user.id);
   if (!data) notFound();

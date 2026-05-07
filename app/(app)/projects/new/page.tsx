@@ -1,15 +1,10 @@
 import { redirect } from "next/navigation";
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { Container } from "@/components/shell/container";
 import { BusinessPlanForm } from "./_components/business-plan-form";
-import { syncUser } from "@/lib/auth/sync-user";
+import { requireDbUser } from "@/lib/auth/current-user";
 
 export default async function NewProjectPage() {
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-  const clerkUser = await currentUser();
-  if (!clerkUser) redirect("/sign-in");
-  const user = await syncUser(clerkUser);
+  const user = await requireDbUser();
   if (user.role !== "company") redirect("/dashboard");
 
   return (

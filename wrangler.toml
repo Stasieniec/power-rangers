@@ -12,6 +12,7 @@ binding = "ASSETS"
 # CLERK_SECRET_KEY
 # CLERK_WEBHOOK_SECRET
 # OPENALEX_EMAIL
+# SEED_SECRET
 
 [[d1_databases]]
 binding = "DB"
@@ -26,26 +27,9 @@ bucket_name = "polymath-staging-uploads"
 binding = "KV"
 id = "b62573e6505445f691806dc2509a3d82"
 
-[env.production]
-name = "polymath-prod"
-
-[[env.production.d1_databases]]
-binding = "DB"
-database_name = "polymath-prod"
-database_id = "0918c81a-b9fc-43bb-8e74-62bdc54f6ffe"
-
-[[env.production.r2_buckets]]
-binding = "UPLOADS"
-bucket_name = "polymath-prod-uploads"
-
-[[env.production.kv_namespaces]]
-binding = "KV"
-id = "d15eed8198414f26aca2707b494b5beb"
-
 [vars]
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_dG91Z2gtc25pcGUtMjAuY2xlcmsuYWNjb3VudHMuZGV2JA"
-NEXT_PUBLIC_APP_ENV = "staging"
-
-[env.production.vars]
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_dG91Z2gtc25pcGUtMjAuY2xlcmsuYWNjb3VudHMuZGV2JA"
-NEXT_PUBLIC_APP_ENV = "production"
+NEXT_PUBLIC_CLERK_SIGN_IN_URL = "/sign-in"
+NEXT_PUBLIC_CLERK_SIGN_UP_URL = "/sign-up"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL = "/dashboard"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL = "/dashboard"

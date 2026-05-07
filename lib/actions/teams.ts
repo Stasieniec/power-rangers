@@ -3,10 +3,9 @@
 import { v7 as uuidv7 } from "uuid";
 import { customAlphabet } from "nanoid";
 import { eq, and } from "drizzle-orm";
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db/client";
-import { syncUser } from "@/lib/auth/sync-user";
+import { getCurrentDbUser } from "@/lib/auth/current-user";
 import { teams, teamMembers, teamInvites } from "@/lib/db/schema";
 
 const codeGen = customAlphabet("abcdefghijkmnpqrstuvwxyz23456789", 16);
@@ -15,11 +14,8 @@ export async function createTeam(input: {
   name: string;
   description?: string;
 }): Promise<{ ok: true; teamId: string } | { ok: false; error: string }> {
-  const { userId } = await auth();
-  if (!userId) return { ok: false, error: "not signed in" };
-  const clerkUser = await currentUser();
-  if (!clerkUser) return { ok: false, error: "not signed in" };
-  const user = await syncUser(clerkUser);
+  const user = await getCurrentDbUser();
+  if (!user) return { ok: false, error: "not signed in" };
   if (user.role !== "researcher") return { ok: false, error: "only researchers can create teams" };
 
   const db = getDb();
@@ -45,11 +41,8 @@ export async function createInvite(input: {
   email?: string;
   ttlHours?: number;
 }): Promise<{ ok: true; code: string } | { ok: false; error: string }> {
-  const { userId } = await auth();
-  if (!userId) return { ok: false, error: "not signed in" };
-  const clerkUser = await currentUser();
-  if (!clerkUser) return { ok: false, error: "not signed in" };
-  const user = await syncUser(clerkUser);
+  const user = await getCurrentDbUser();
+  if (!user) return { ok: false, error: "not signed in" };
 
   const db = getDb();
   const lead = await db.query.teamMembers.findFirst({
@@ -78,11 +71,8 @@ export async function revokeInvite(input: {
   inviteId: string;
   teamId: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  const { userId } = await auth();
-  if (!userId) return { ok: false, error: "not signed in" };
-  const clerkUser = await currentUser();
-  if (!clerkUser) return { ok: false, error: "not signed in" };
-  const user = await syncUser(clerkUser);
+  const user = await getCurrentDbUser();
+  if (!user) return { ok: false, error: "not signed in" };
 
   const db = getDb();
   const lead = await db.query.teamMembers.findFirst({

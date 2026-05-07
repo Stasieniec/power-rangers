@@ -3,7 +3,9 @@
 export interface OAConcept {
   id: string;
   display_name: string;
-  level: number;
+  // `level` was a top-of-domain hint (0..5) in older OpenAlex schemas; not all
+  // responses include it now. We don't use it for matching, so leave optional.
+  level?: number;
   score: number;
 }
 

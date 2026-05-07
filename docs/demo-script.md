@@ -1,87 +1,167 @@
-# Polymath — On-stage demo script (3:30)
+# Polymath — on-stage demo script
 
-Two browser windows side by side: **Alice (researcher)** on the left, **MedScan (company)** on the right.
+**Target length:** 3:00. Hard ceiling 3:30.
+**Single browser window.** No two-window choreography — one persona switch via the `/demo` door.
+**Live URL:** https://polymath.power-rangers.workers.dev
 
-## Open (0:00 – 0:10)
+---
 
-**Alice window: `/`**
+## Pre-show checklist (T-30 minutes)
 
-> "Polymath is research, posed as a competition. Companies post end-goals; we translate them to research questions; teams compete with real publication data. Three pillars, all visible today."
+- [ ] Open an incognito/private browser window. Sign out of Clerk if relevant.
+- [ ] Visit `https://polymath.power-rangers.workers.dev/projects` once to warm the worker.
+- [ ] Pre-load AI caches:
+  ```bash
+  curl -X POST "https://polymath.power-rangers.workers.dev/api/admin/warm-up?secret=$SEED_SECRET"
+  ```
+- [ ] Have a sample business plan in your clipboard for the AI-1 moment. Suggested:
+  > **Business plan:** We're a B2B SaaS for SMB retailers. Customers churn at 8% monthly. We have transaction logs, support-ticket history, and product-usage telemetry. We want to predict churn 14 days in advance and trigger save-flows.
+  >
+  > **End-goal:** A weekly churn-risk score per customer, with intervention recommendations the success team can act on.
+- [ ] In the incognito window, open https://polymath.power-rangers.workers.dev/. Don't navigate further.
 
-Click "Get started → researcher".
+---
 
-## Pillar 2: Researcher onboarding (0:10 – 0:50) — Hero B
+## The script
 
-**Alice window: `/onboard`**
+### Open — 0:00 to 0:15
 
-> "Alice just signed up. Polymath asks for her ORCID."
+**Screen:** `/`
 
-Paste Alice's ORCID (or click a demo researcher).
+> "Polymath turns research into a competition. Companies post end-goals; we translate them into research questions; teams compete with real publication data. Three pillars, four live AI moments. Real, today."
 
-> "We hit OpenAlex live, fetch her publication history, and Gemini synthesizes an expertise profile."
+Click **"Browse open projects →"**.
 
-Watch skeleton phases ("Fetching…" → "Analyzing…").
+---
 
-> "Real publications. Real concepts. Same vocabulary the matching engine will use."
+### Public surface — 0:15 to 1:00
 
-## Team formation (0:50 – 1:00)
+**Screen:** `/projects` → click **"Late-stage clinical trial outcome prediction"**
 
-**Alice window: `/teams/convex-lab`**
+> "MedScan Diagnostics posted a brief about phase III trial dropout. Polymath translated it into five concept-tagged research questions — researchable, scoped, ready to compete on."
 
-> "Alice is on Convex Lab with Bob — already onboarded with his own publications. Aggregate expertise computed across both."
+Scroll past the questions briefly.
 
-## Project browse + apply (1:00 – 1:55) — Hero D
+Click on a researcher card on the team page (or navigate to `/researchers/<id>` for any seeded researcher — Nigam Shah, Daphne Koller, etc.)
 
-**Alice window: `/projects` → click MedScan's open project**
+**Screen:** `/researchers/<id>`
 
-> "Here's MedScan's project: late-stage clinical trial dropout prediction. Polymath generated five research questions from MedScan's brief — we'll show that engine in a minute."
+> "Each profile is built from real OpenAlex data. Twenty publications, citation-ranked. Gemini synthesizes the headline and the two-sentence summary in gold — both verifiable against the publication list below."
 
-Click "Apply with my team."
+Scroll the publication list. Highlight citation counts in cyan.
 
-Type 2-sentence pitch.
+---
 
-> "When Alice's team applies, we compute a real concept-overlap score between her team's expertise and the project questions — cosine similarity over OpenAlex concepts. Then Gemini writes a rationale and adjusts the score. The number isn't a vibe; it has math under it."
+### Demo door switch — 1:00 to 1:10
 
-Submit. Watch skeleton: "Computing concept overlap…" → "Asking Gemini…".
+> "I'll step into the company side now. Sign-up requires an email round-trip — brittle on stage — so we have a demo door for live walk-throughs."
 
-> "84/100 with a rationale citing specific publications."
+Click **"Demo"** in the nav (gold link).
 
-## Switch to MedScan (1:55 – 2:00)
+**Screen:** `/demo`
 
-> "Now MedScan's side."
+> "Pre-seeded personas. One click."
 
-## Pillar 1: Project posting (2:00 – 2:30) — Hero A
+Click **MedScan Diagnostics** (the gold-accented card).
 
-**MedScan window: `/projects/new`**
+---
 
-> "MedScan's other project starts as a paragraph of business plan. Watch."
+### Pillar 1 + AI-1 (LIVE) — 1:10 to 1:55
 
-Paste a different business plan + end-goal. Submit.
+**Screen:** company `/dashboard`
 
-> "Gemini transforms it into 5 research questions, each tagged with concepts. MedScan can edit any of them, regenerate, or publish as-is."
+> "We're MedScan now. Two projects — one open, one in progress."
 
-## Application review (2:30 – 2:50)
+Click **"+ New project"**.
 
-**MedScan window: `/projects/p1/manage`**
+**Screen:** `/projects/new`
 
-> "Three teams applied. Convex Lab on top with 84. Two competitors at 71 and 65. Each comes with rationale and per-question alignment."
+Paste the business plan. Paste the end-goal. Click **"Generate research questions"**.
 
-Expand Convex Lab's per-question alignment.
+> "Watch. Gemini takes a paragraph of business intent and emits structured, scoped research questions. Concept-tagged so they slot directly into the matching engine."
 
-> "Per question, you see why this team fits. Click accept."
+[Skeleton phases visible ~5–8s.]
 
-Click Accept on Convex Lab.
+[When questions render]
 
-## Pillar 3: Alignment dashboard (3:00 – 3:30)
+> "Five questions, each editable. We can regenerate or publish."
 
-**MedScan window: `/projects/p2/dashboard`**
+**Don't publish.** Click "Dashboard" in nav to leave the draft.
 
-> "And here's what alignment looks like once research is underway. MedScan's other project, three weeks in. Each weekly report is translated into per-question business-language cards: technical finding on the left, business translation on the right, impact in gold. The translation is the comms layer."
+---
 
-Scroll through the cards.
+### Pillar 2 + AI-3 (PRE-BAKED) — 1:55 to 2:25
 
-(Optional, if time): switch to a researcher account on BioFlux Lab, submit a 4th report, watch cards animate in.
+**Screen:** Click into "Late-stage clinical trial outcome prediction" → manage page (`/projects/project_p1/manage`)
 
-## Wrap (3:30)
+> "Two teams applied. Each has a match score from real concept-overlap math, plus a Gemini-written rationale that adjusts ±10 based on what the pitch reveals beyond the publications."
 
-> "Three pillars. Four AI moments. Real publication data. That's Polymath."
+Point at the score chips.
+
+> "The score isn't a vibe. It's cosine similarity over OpenAlex concept vectors, weighted by author confidence. The AI is honest — when the publications don't match the project, the score is low and the rationale says why. That's the integrity we want."
+
+Click **"Per-question alignment"** to expand the top card.
+
+> "Per question, you see exactly why this team scored what they scored. Direct overlap, adjacent expertise, or honest gaps."
+
+**Don't accept anyone** — leaves P1 clean if you re-demo.
+
+---
+
+### Pillar 3 + AI-4 cards — 2:25 to 2:55
+
+**Screen:** Navigate to `/projects/project_p2/dashboard` (URL bar, or via dashboard).
+
+> "Pillar three — alignment. Project P2 has been in progress three weeks. The accepted team submits weekly reports in their own technical language. Gemini translates each into per-question business-language cards."
+
+Scroll the findings feed.
+
+> "Technical finding on the left in monospace, business translation on the right in serif, impact note in gold. The dashboard _is_ the comms layer between research and business — no more explaining what AUC means to your CEO."
+
+Per-question progress bars at the top show coverage across reports.
+
+---
+
+### Wrap — 2:55 to 3:00
+
+Don't navigate. Just close the loop.
+
+> "Three pillars. Four AI moments — all live today. Real publication data, real translation, real signal under every score. That's Polymath."
+
+---
+
+## Recovery scripts (if something breaks live)
+
+| What broke                                   | What to say                                     | What to do                                                                                      |
+| -------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| AI-1 hangs >8s during the live moment        | "Network blip — let me show the cached output." | In the URL bar, append `?demo=fallback` and reload. The worker returns a pre-recorded response. |
+| Demo door 500s                               | "One sec, slot reset."                          | Reload `/demo`, click again. Cookie may have stuck — try in a fresh incognito tab.              |
+| Match scores look unflattering               | (it's a feature)                                | "The AI is honest about overlap — that's the integrity we want. No score inflation."            |
+| Translation cards don't animate              | (cosmetic)                                      | Don't apologize. Move on.                                                                       |
+| `/projects` shows "0 projects"               | Major data issue.                               | Cut to the slides. Have someone re-run `pnpm seed` (~30s) in the background.                    |
+| Browser is signed in to a real Clerk account | Wrong window                                    | Use the incognito tab; nav should show "Demo" link if you're signed out.                        |
+
+---
+
+## Don't say (anti-script)
+
+- Don't name the auth provider, the framework, the database, or the deploy adapter unless asked. Judges don't care; the architecture is in the README.
+- Don't apologize for unfinished features. Don't say "in production we'd…".
+- Don't talk about test counts.
+- Don't oversell. The match scores are real, not always high.
+
+If asked **"how does the matching score work?"**:
+
+> "Cosine similarity over OpenAlex concept vectors, weighted by each author's confidence on each concept. We aggregate concepts across team members, then Gemini reads the actual publications and the team's pitch to adjust ±10 with a written rationale. So the number is grounded in the math, but the rationale captures qualitative signal the math misses."
+
+If asked **"why is that team's score so low?"**:
+
+> "Their publications are on different topics than this project. The model is honest about it — that's the point. We could lift the score with prompt engineering tricks, but then the rationale would lie."
+
+---
+
+## After the demo
+
+- Tag the commit if it's the final cut: `git tag demo-final && git push origin demo-final`
+- Take a screenshot of `/projects/project_p2/dashboard` with the cards expanded — use it on the deck's last slide.
+- Reset the seed if the demo dirtied the state: `curl -X POST "$URL/api/admin/seed?secret=$SEED_SECRET"`.

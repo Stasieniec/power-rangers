@@ -20,12 +20,15 @@ export function Hero() {
           Polymath translates business goals into structured research questions, matches them to the
           right teams using real publication data, and keeps progress legible to both sides.
         </p>
-        <div className="mt-10 flex items-center gap-4">
+        <div className="mt-10 flex flex-wrap items-center gap-4">
           <Button size="lg" asChild>
-            <Link href="/sign-up">Get started</Link>
+            <Link href="#try-it">Try the AI live ↓</Link>
+          </Button>
+          <Button variant="secondary" size="lg" asChild>
+            <Link href="/demo">Demo door →</Link>
           </Button>
           <Button variant="ghost" size="lg" asChild>
-            <Link href="/projects">Browse open projects →</Link>
+            <Link href="/projects">Browse open projects</Link>
           </Button>
         </div>
       </Container>

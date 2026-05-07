@@ -1,6 +1,6 @@
 export const COMPANY = {
   id: "comp_medscan",
-  ownerClerkId: "REPLACE_WITH_CLERK_ID_FOR_MEDSCAN_USER",
+  ownerClerkId: "clerk_synthetic_medscan",
   ownerEmail: "medscan-demo@polymath.app",
   ownerDisplayName: "MedScan Diagnostics",
   name: "MedScan Diagnostics",

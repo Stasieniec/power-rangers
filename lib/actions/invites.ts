@@ -2,10 +2,9 @@
 
 import { v7 as uuidv7 } from "uuid";
 import { eq, and } from "drizzle-orm";
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db/client";
-import { syncUser } from "@/lib/auth/sync-user";
+import { getCurrentDbUser } from "@/lib/auth/current-user";
 import { teamInvites, teamMembers, researchers } from "@/lib/db/schema";
 
 export async function acceptInvite(
@@ -15,11 +14,8 @@ export async function acceptInvite(
   | { ok: false; error: string }
   | { ok: "needs-onboard"; teamId: string }
 > {
-  const { userId } = await auth();
-  if (!userId) return { ok: false, error: "not signed in" };
-  const clerkUser = await currentUser();
-  if (!clerkUser) return { ok: false, error: "not signed in" };
-  const user = await syncUser(clerkUser);
+  const user = await getCurrentDbUser();
+  if (!user) return { ok: false, error: "not signed in" };
 
   const db = getDb();
   const invite = await db.query.teamInvites.findFirst({

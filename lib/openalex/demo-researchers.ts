@@ -2,11 +2,13 @@
  * A small set of well-known public researchers with stable ORCIDs,
  * used as one-click fallbacks during the live demo if the audience
  * doesn't have an ORCID handy.
+ *
+ * All ORCIDs verified against https://api.openalex.org/authors?filter=orcid:<orcid>
  */
 export const DEMO_RESEARCHERS = [
   {
-    label: "Yann LeCun (NYU / Meta AI)",
-    orcid: "0000-0003-1990-7172",
+    label: "Yoshua Bengio (Mila / Université de Montréal)",
+    orcid: "0000-0002-9322-3515",
     field: "Deep learning",
   },
   {
@@ -16,7 +18,7 @@ export const DEMO_RESEARCHERS = [
   },
   {
     label: "Daphne Koller (Insitro)",
-    orcid: "0000-0002-2310-4243",
+    orcid: "0000-0002-2361-6479",
     field: "Probabilistic models / biology",
   },
 ] as const;

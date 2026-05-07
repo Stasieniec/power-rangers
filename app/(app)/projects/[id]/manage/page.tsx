@@ -1,18 +1,13 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { notFound } from "next/navigation";
 import { Container } from "@/components/shell/container";
-import { syncUser } from "@/lib/auth/sync-user";
+import { requireDbUser } from "@/lib/auth/current-user";
 import { getApplicationsForProject } from "@/lib/db/queries/applications-list";
 import { ApplicationCard } from "./_components/application-card";
 
 export default async function ManagePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
-  const clerkUser = await currentUser();
-  if (!clerkUser) redirect("/sign-in");
-  const user = await syncUser(clerkUser);
+  const user = await requireDbUser();
 
   const data = await getApplicationsForProject(id, user.id);
   if (!data) notFound();

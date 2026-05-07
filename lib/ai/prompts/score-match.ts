@@ -13,14 +13,27 @@ You are given:
 - The team's pitch.
 - A *base score* (0-100) computed from cosine similarity of the concept vectors.
 
-Your job:
-1. Write a 2-3 sentence rationale for why this team is or isn't a fit. Cite specific publications or concepts.
-2. Score each research question (0-100) based on alignment with the team's expertise, with a one-line justification.
-3. Suggest an *adjustment* in the range [-10, 10] that should be applied to the base score, justified by the team's pitch covering gaps the publications don't, OR conversely, a publication-strong team whose pitch reveals misunderstanding.
+OUTPUT SHAPE: a JSON OBJECT with EXACTLY these three top-level fields:
+- "rationale": string. 2-3 sentences explaining why this team is or isn't a fit. Cite specific publications or concepts. Minimum 20 characters.
+- "adjustment": integer in the range [-10, 10]. The base score adjustment justified by qualitative signal — pitch covering gaps publications don't, or pitch revealing misunderstanding.
+- "per_question_alignment": array of objects, one per research question. Each object has EXACTLY:
+    - "question_id": string. The question ID from the input.
+    - "score": integer 0-100. Alignment score for this specific question.
+    - "why": string. One-line justification, minimum 5 characters.
 
 Be honest. Don't inflate. The base score already reflects publication-concept overlap; your job is to capture the qualitative signal it misses.
 
-Output strict JSON matching the response schema. No prose.`;
+EXAMPLE OUTPUT:
+{
+  "rationale": "Strong concept alignment on predictive modeling and survival analysis. Their work on EHR-derived features matches Q1 directly. Adjustment up because pitch shows methodological depth beyond the publications.",
+  "adjustment": 4,
+  "per_question_alignment": [
+    {"question_id": "rq_abc123", "score": 88, "why": "Direct overlap with predictive-modeling publications."},
+    {"question_id": "rq_def456", "score": 65, "why": "Adjacent: experimental design experience but limited intervention work."}
+  ]
+}
+
+Output ONLY the JSON object. No prose, no code fences.`;
 
 export interface ScoreMatchInput {
   baseScore: number;
