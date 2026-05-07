@@ -9,6 +9,12 @@ export async function POST(req: Request) {
   if (!env.SEED_SECRET || secret !== env.SEED_SECRET) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
-  const result = await runSeed();
-  return NextResponse.json(result);
+  try {
+    const result = await runSeed();
+    return NextResponse.json(result);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const stack = err instanceof Error ? err.stack : undefined;
+    return NextResponse.json({ error: message, stack }, { status: 500 });
+  }
 }

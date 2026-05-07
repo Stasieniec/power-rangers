@@ -14,7 +14,7 @@ const pillars = [
   {
     n: "03",
     title: "Alignment Environment",
-    body: "Teams submit weekly reports in their own technical language. Polymath translates them into business-side cards — KPI deltas, timeline impact, plain-English findings.",
+    body: "Teams submit weekly reports in their own technical language. Praxis translates them into business-side cards — KPI deltas, timeline impact, plain-English findings.",
   },
 ];
 

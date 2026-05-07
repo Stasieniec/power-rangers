@@ -52,7 +52,7 @@ export function RoleButtons() {
           <p className="text-gold font-mono text-xs tracking-widest uppercase">Company</p>
           <h3 className="font-display mt-3 text-2xl">I want to post research projects.</h3>
           <p className="text-text-dim mt-3 text-sm">
-            Paste a business plan, watch Polymath translate it into research questions, and review
+            Paste a business plan, watch Praxis translate it into research questions, and review
             applications from competing teams.
           </p>
         </button>

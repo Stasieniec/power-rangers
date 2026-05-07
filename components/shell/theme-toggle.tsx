@@ -19,11 +19,8 @@ export function ThemeToggle() {
     const next: Theme = theme === "light" ? "dark" : "light";
     setTheme(next);
     document.documentElement.setAttribute("data-theme", next);
-    try {
-      localStorage.setItem("theme", next);
-    } catch {
-      // localStorage may be unavailable (private mode, quota, etc.) — ignore.
-    }
+    const oneYear = 60 * 60 * 24 * 365;
+    document.cookie = `theme=${next}; path=/; max-age=${String(oneYear)}; SameSite=Lax`;
   }
 
   return (

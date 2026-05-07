@@ -69,7 +69,7 @@ export function ReportForm({ projectId }: { projectId: string }) {
       <div>
         <Label htmlFor="report">Report (markdown)</Label>
         <p className="text-text-dim mt-1 text-xs">
-          Write in your own terms. Polymath will translate findings for the company side.
+          Write in your own terms. Praxis will translate findings for the company side.
         </p>
         <textarea
           id="report"

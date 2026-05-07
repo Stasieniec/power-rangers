@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
-import { SignOutButton } from "@clerk/nextjs";
 import { Container } from "./container";
 import { ThemeToggle } from "./theme-toggle";
+import { SignOutLink } from "./sign-out-link";
 import { isDemoSession } from "@/lib/auth/current-user";
 import { exitDemo } from "@/lib/actions/demo";
 
@@ -15,7 +15,7 @@ export async function PublicNav() {
     <header className="border-ink-3/60 border-b">
       <Container className="flex h-16 items-center justify-between">
         <Link href="/" className="font-display text-xl tracking-tight">
-          Polymath
+          Praxis
         </Link>
         <nav className="flex items-center gap-8 text-sm">
           <Link href="/projects" className="text-text-dim hover:text-text">
@@ -37,14 +37,7 @@ export async function PublicNav() {
                   </button>
                 </form>
               ) : (
-                <SignOutButton redirectUrl="/">
-                  <button
-                    type="button"
-                    className="text-text-dim hover:text-text cursor-pointer bg-transparent text-sm"
-                  >
-                    Sign out
-                  </button>
-                </SignOutButton>
+                <SignOutLink />
               )}
             </>
           ) : (

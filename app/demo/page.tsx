@@ -5,7 +5,7 @@ import { Footer } from "@/components/shell/footer";
 import { PersonaCard } from "./_components/persona-card";
 
 export const metadata = {
-  title: "Demo — Polymath",
+  title: "Demo — Praxis",
 };
 
 export default function DemoPage() {

@@ -1,0 +1,17 @@
+# Local Worker context secrets — copy to `.dev.vars` and fill in.
+# Read by Miniflare during `pnpm dev` (via @opennextjs/cloudflare's
+# initOpenNextCloudflareForDev). Distinct from .env.local, which Next.js
+# reads for client-side / Node-side variables.
+
+# Required for any AI flow (project questions, match rationale, report
+# translation, researcher summaries, seed). Get one at:
+# https://aistudio.google.com/apikey
+GEMINI_API_KEY=
+
+# Required to authorize POSTs to /api/admin/seed and /api/admin/warm-up.
+# Pick any string locally; production uses one stored out-of-band.
+SEED_SECRET=localdev
+
+# Sent as User-Agent to OpenAlex so they can rate-limit politely.
+# Any email works; yours is fine.
+OPENALEX_EMAIL=

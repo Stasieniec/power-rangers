@@ -17,7 +17,7 @@ export function Hero() {
           <span className="text-text-dim italic">posed as a competition.</span>
         </h1>
         <p className="text-text-dim mt-8 max-w-xl text-lg">
-          Polymath translates business goals into structured research questions, matches them to the
+          Praxis translates business goals into structured research questions, matches them to the
           right teams using real publication data, and keeps progress legible to both sides.
         </p>
         <div className="mt-10 flex flex-wrap items-center gap-4">

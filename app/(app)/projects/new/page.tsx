@@ -15,7 +15,7 @@ export default async function NewProjectPage() {
         </p>
         <h1 className="font-display mt-3 text-5xl">Tell us your end-goal.</h1>
         <p className="text-text-dim mt-4">
-          Polymath translates your business intent into research questions you can compete on.
+          Praxis translates your business intent into research questions you can compete on.
           You&apos;ll get a chance to edit them before publishing.
         </p>
         <div className="mt-12">
