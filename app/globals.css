@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
-@theme {
-  --color-ink: #0a0e1a;
-  --color-ink-2: #111626;
-  --color-ink-3: #1a2236;
-  --color-paper: #f5f2ec;
-  --color-text: #e8e6e1;
-  --color-text-dim: #8b92a5;
-  --color-cyan: #3fcedb;
-  --color-cyan-dim: #1a6e78;
-  --color-gold: #d4a547;
-  --color-rose: #e26d7a;
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-paper: var(--paper);
+  --color-text: var(--text);
+  --color-text-dim: var(--text-dim);
+  --color-cyan: var(--cyan);
+  --color-cyan-dim: var(--cyan-dim);
+  --color-gold: var(--gold);
+  --color-rose: var(--rose);
 
   --font-display: var(--font-display);
   --font-sans: var(--font-sans);
@@ -19,6 +19,32 @@
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
+}
+
+:root {
+  --ink: #faf8f3;
+  --ink-2: #ffffff;
+  --ink-3: #d8d1c0;
+  --paper: #0a0e1a;
+  --text: #0a0e1a;
+  --text-dim: #3a4052;
+  --cyan: #115860;
+  --cyan-dim: #3fcedb;
+  --gold: #8a6515;
+  --rose: #a83a48;
+}
+
+[data-theme="dark"] {
+  --ink: #0a0e1a;
+  --ink-2: #111626;
+  --ink-3: #1a2236;
+  --paper: #f5f2ec;
+  --text: #e8e6e1;
+  --text-dim: #8b92a5;
+  --cyan: #3fcedb;
+  --cyan-dim: #1a6e78;
+  --gold: #d4a547;
+  --rose: #e26d7a;
 }
 
 @layer base {

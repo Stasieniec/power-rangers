@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Container } from "./container";
+import { ThemeToggle } from "./theme-toggle";
 
 export function PublicNav() {
   return (
@@ -21,6 +22,7 @@ export function PublicNav() {
           >
             Get started
           </Link>
+          <ThemeToggle />
         </nav>
       </Container>
     </header>
