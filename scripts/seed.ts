@@ -66,6 +66,16 @@ export async function runSeed() {
       role: "researcher" as const,
       displayName: u.displayName,
     })),
+    // Un-onboarded researcher — exists in users table but has no researchers
+    // row, so /dashboard redirects to /onboard. Lets us demo the live ORCID →
+    // OpenAlex bundle → AI-2 path without a real Clerk signup.
+    {
+      id: "user_fresh",
+      clerkId: "clerk_synthetic_fresh",
+      email: "fresh@polymath-demo.app",
+      role: "researcher" as const,
+      displayName: "New researcher",
+    },
   ]);
 
   // 3. Company

@@ -20,6 +20,7 @@ export const DEMO_USER_IDS = [
   "user_diego",
   "user_eve",
   "user_frank",
+  "user_fresh",
 ] as const;
 
 export type DemoUserId = (typeof DEMO_USER_IDS)[number];

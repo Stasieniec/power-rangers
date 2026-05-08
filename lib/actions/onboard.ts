@@ -12,7 +12,9 @@ import {
   fetchAuthorWorks,
   reconstructAbstract,
 } from "@/lib/openalex/client";
+import { lookupBundledByOrcid } from "@/lib/openalex/bundle-lookup";
 import { summarizeResearcher } from "@/lib/ai/prompts/summarize-researcher";
+import type { OAAuthor, OAWork } from "@/lib/openalex/types";
 
 interface OnboardInput {
   orcid?: string;
@@ -29,31 +31,47 @@ export async function onboardResearcher(input: OnboardInput): Promise<OnboardRes
   const { env } = getCloudflareContext();
   const oaOpts = { kv: env.KV, email: env.OPENALEX_EMAIL };
 
-  // 1. Resolve author
-  let author = null;
-  try {
-    if (input.orcid) {
-      author = await fetchAuthorByOrcid(input.orcid, oaOpts);
-    }
-    if (!author && input.name) {
-      author = await fetchAuthorByName(input.name, input.affiliation, oaOpts);
-    }
-  } catch (e) {
-    console.error("[onboard] OpenAlex fetch failed", e);
-    return { ok: false, error: `OpenAlex error: ${e instanceof Error ? e.message : String(e)}` };
-  }
-  if (!author) return { ok: false, error: "could not find author on OpenAlex" };
+  // 1. Resolve author + works.
+  // Bundle-first: Cloudflare Worker IPs get rate-limited hard by OpenAlex, so
+  // for ORCIDs we pre-fetched into scripts/fixtures/openalex-bundle.json we
+  // skip the network entirely. This is the fast path for the live demo.
+  let author: OAAuthor | null = null;
+  let works: OAWork[] = [];
 
-  // 2. Fetch top works
-  let works;
-  try {
-    works = await fetchAuthorWorks(author.id, 20, oaOpts);
-  } catch (e) {
-    console.error("[onboard] OpenAlex works fetch failed", e);
-    return {
-      ok: false,
-      error: `OpenAlex works error: ${e instanceof Error ? e.message : String(e)}`,
-    };
+  if (input.orcid) {
+    const bundled = lookupBundledByOrcid(input.orcid);
+    if (bundled) {
+      author = bundled.author;
+      works = bundled.works;
+    }
+  }
+
+  if (!author) {
+    try {
+      if (input.orcid) {
+        author = await fetchAuthorByOrcid(input.orcid, oaOpts);
+      }
+      if (!author && input.name) {
+        author = await fetchAuthorByName(input.name, input.affiliation, oaOpts);
+      }
+    } catch (e) {
+      console.error("[onboard] OpenAlex fetch failed", e);
+      return {
+        ok: false,
+        error: `OpenAlex error: ${e instanceof Error ? e.message : String(e)}`,
+      };
+    }
+    if (!author) return { ok: false, error: "could not find author on OpenAlex" };
+
+    try {
+      works = await fetchAuthorWorks(author.id, 20, oaOpts);
+    } catch (e) {
+      console.error("[onboard] OpenAlex works fetch failed", e);
+      return {
+        ok: false,
+        error: `OpenAlex works error: ${e instanceof Error ? e.message : String(e)}`,
+      };
+    }
   }
 
   // 3. AI summary
@@ -115,20 +133,20 @@ export async function onboardResearcher(input: OnboardInput): Promise<OnboardRes
       await db.delete(researcherConcepts).where(eq(researcherConcepts.researcherId, researcherId));
     }
 
-    if (works.length > 0) {
-      await db.insert(publications).values(
-        works.map((w) => ({
-          id: uuidv7(),
-          researcherId,
-          openalexWorkId: w.id,
-          title: w.title ?? w.display_name ?? "(untitled)",
-          year: w.publication_year,
-          venue: w.primary_location?.source?.display_name ?? null,
-          abstract: reconstructAbstract(w.abstract_inverted_index),
-          citationCount: w.cited_by_count,
-          doi: w.doi,
-        }))
-      );
+    // D1 has a ~100KB SQL statement limit; abstracts can be several KB each, so
+    // 20 publications in one batch can blow past it. Insert one row at a time.
+    for (const w of works) {
+      await db.insert(publications).values({
+        id: uuidv7(),
+        researcherId,
+        openalexWorkId: w.id,
+        title: w.title ?? w.display_name ?? "(untitled)",
+        year: w.publication_year,
+        venue: w.primary_location?.source?.display_name ?? null,
+        abstract: reconstructAbstract(w.abstract_inverted_index),
+        citationCount: w.cited_by_count,
+        doi: w.doi,
+      });
     }
 
     // Persist AI-derived expertise tags as our authoritative concept set.

@@ -52,6 +52,13 @@ export default function DemoPage() {
               subtitle="On the accepted team. Submit a new weekly report — watch the cards animate in on the company's dashboard."
               unlock="/projects/p2/report (live AI)"
             />
+            <PersonaCard
+              userId="user_fresh"
+              eyebrow="Researcher · brand-new account"
+              title="Onboard from scratch"
+              subtitle="Dashboard redirects you to /onboard. Pick a sample ORCID, watch OpenAlex + Gemini build the profile in real time."
+              unlock="Live AI-2 onboarding flow"
+            />
           </div>
 
           <div className="border-ink-3 mt-16 border-t pt-8">

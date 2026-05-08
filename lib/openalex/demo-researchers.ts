@@ -1,25 +1,24 @@
 /**
- * A small set of well-known public researchers with stable ORCIDs,
- * used as one-click fallbacks during the live demo if the audience
- * doesn't have an ORCID handy.
- *
- * All ORCIDs verified against https://api.openalex.org/authors?filter=orcid:<orcid>
+ * Quick-fill suggestions for the live /onboard form. Every ORCID here MUST be
+ * present in scripts/fixtures/openalex-bundle.json so the onboarding flow can
+ * resolve the author without hitting OpenAlex (Cloudflare Worker IPs get
+ * rate-limited hard).
  */
 export const DEMO_RESEARCHERS = [
   {
-    label: "Yoshua Bengio (Mila / Université de Montréal)",
-    orcid: "0000-0002-9322-3515",
-    field: "Deep learning",
-  },
-  {
-    label: "Fei-Fei Li (Stanford)",
-    orcid: "0000-0002-7481-0810",
-    field: "Computer vision",
-  },
-  {
-    label: "Daphne Koller (Insitro)",
+    label: "Daphne Koller (Insitro / Broad)",
     orcid: "0000-0002-2361-6479",
-    field: "Probabilistic models / biology",
+    field: "Probabilistic models in biology",
+  },
+  {
+    label: "Andrew Ng (Stanford)",
+    orcid: "0000-0001-5547-3196",
+    field: "Machine learning",
+  },
+  {
+    label: "Pranav Rajpurkar (Harvard)",
+    orcid: "0000-0002-8030-3727",
+    field: "Medical AI",
   },
 ] as const;
 

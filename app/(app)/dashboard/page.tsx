@@ -58,7 +58,12 @@ export default async function DashboardPage() {
         <section className="mt-12">
           <h2 className="font-display text-2xl">Applications</h2>
           {applications.length === 0 ? (
-            <p className="text-text-dim mt-4">No applications yet.</p>
+            <p className="text-text-dim mt-4">
+              No applications yet.{" "}
+              <Link href="/projects" className="text-cyan underline-offset-4 hover:underline">
+                Browse open projects →
+              </Link>
+            </p>
           ) : (
             <ul className="mt-6 space-y-3">
               {applications.map((a) => (
