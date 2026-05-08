@@ -1,4 +1,4 @@
-import { eq, inArray, desc } from "drizzle-orm";
+import { eq, inArray, desc, and } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import {
   researchers,
@@ -48,5 +48,30 @@ export async function getResearcherDashboard(userId: string) {
           .where(inArray(applications.teamId, teamIds))
           .orderBy(desc(applications.createdAt));
 
-  return { researcher: researcher ?? null, teams: myTeams, applications: myApps };
+  // Projects where one of my teams is the accepted team (won the competition).
+  // These are the ones I can submit weekly reports for.
+  const activeProjects =
+    teamIds.length === 0
+      ? []
+      : await db
+          .select({
+            id: projects.id,
+            title: projects.title,
+            status: projects.status,
+            companyName: companies.name,
+            teamId: teams.id,
+            teamName: teams.name,
+          })
+          .from(projects)
+          .innerJoin(teams, eq(teams.id, projects.acceptedTeamId))
+          .innerJoin(companies, eq(companies.id, projects.companyId))
+          .where(and(inArray(projects.acceptedTeamId, teamIds), eq(projects.status, "in_progress")))
+          .orderBy(desc(projects.createdAt));
+
+  return {
+    researcher: researcher ?? null,
+    teams: myTeams,
+    applications: myApps,
+    activeProjects,
+  };
 }

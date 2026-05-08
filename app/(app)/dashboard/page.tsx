@@ -15,7 +15,7 @@ export default async function DashboardPage() {
     return <CompanyDashboard displayName={user.displayName} projects={projects} />;
   }
 
-  const { researcher, teams, applications } = await getResearcherDashboard(user.id);
+  const { researcher, teams, applications, activeProjects } = await getResearcherDashboard(user.id);
   if (!researcher) redirect("/onboard");
 
   return (
@@ -54,6 +54,39 @@ export default async function DashboardPage() {
             </ul>
           )}
         </section>
+
+        {activeProjects.length > 0 && (
+          <section className="mt-12">
+            <h2 className="font-display text-2xl">Active projects</h2>
+            <p className="text-text-dim mt-2 text-sm">
+              Projects your team won. Submit weekly reports — Praxis translates findings for the
+              company.
+            </p>
+            <ul className="mt-6 grid gap-4">
+              {activeProjects.map((p) => (
+                <li
+                  key={p.id}
+                  className="border-cyan/30 bg-cyan/5 flex items-center justify-between gap-4 rounded-md border p-5"
+                >
+                  <div>
+                    <p className="font-display text-lg">{p.title}</p>
+                    <p className="text-text-dim font-mono text-xs">
+                      {p.companyName} · {p.teamName}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 gap-2">
+                    <Button asChild variant="secondary" size="sm">
+                      <Link href={`/projects/${p.id}/dashboard`}>Alignment view</Link>
+                    </Button>
+                    <Button asChild size="sm">
+                      <Link href={`/projects/${p.id}/report`}>+ Weekly report</Link>
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <section className="mt-12">
           <h2 className="font-display text-2xl">Applications</h2>
