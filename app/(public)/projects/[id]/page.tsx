@@ -1,10 +1,14 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { and, eq } from "drizzle-orm";
 import { Container } from "@/components/shell/container";
 import { ResearchQuestionCard } from "@/components/project/research-question-card";
 import { ProjectMeta } from "@/components/project/project-meta";
 import { Button } from "@/components/ui/button";
 import { getProjectDetail } from "@/lib/db/queries/projects";
+import { getCurrentDbUser } from "@/lib/auth/current-user";
+import { getDb } from "@/lib/db/client";
+import { teamMembers } from "@/lib/db/schema";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +16,17 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const { id } = await params;
   const project = await getProjectDetail(id);
   if (!project) notFound();
+
+  let canSubmitReport = false;
+  if (project.status === "in_progress" && project.acceptedTeamId) {
+    const user = await getCurrentDbUser();
+    if (user) {
+      const member = await getDb().query.teamMembers.findFirst({
+        where: and(eq(teamMembers.teamId, project.acceptedTeamId), eq(teamMembers.userId, user.id)),
+      });
+      canSubmitReport = !!member;
+    }
+  }
 
   return (
     <main className="py-16">
@@ -56,6 +71,19 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             </p>
             <Button asChild className="mt-6">
               <Link href={`/projects/${project.id}/apply`}>Apply with my team →</Link>
+            </Button>
+          </section>
+        )}
+
+        {canSubmitReport && (
+          <section className="border-cyan/30 bg-cyan/5 mt-16 rounded-md border p-8">
+            <h3 className="font-display text-xl">You're on the accepted team</h3>
+            <p className="text-text-dim mt-2 text-sm">
+              Submit a weekly report — Praxis will translate your findings into business language
+              for the company's alignment dashboard.
+            </p>
+            <Button asChild className="mt-6">
+              <Link href={`/projects/${project.id}/report`}>+ Submit weekly report</Link>
             </Button>
           </section>
         )}
