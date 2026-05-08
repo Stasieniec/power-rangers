@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import {
   projects,
@@ -6,6 +6,7 @@ import {
   reports,
   reportFindings,
   teams,
+  teamMembers,
   companies,
 } from "@/lib/db/schema";
 
@@ -27,7 +28,17 @@ export async function getAlignmentDashboard(projectId: string, userId: string) {
     .where(eq(projects.id, projectId))
     .limit(1);
   if (!project) return null;
-  if (project.ownerUserId !== userId) return null;
+
+  // Visible to: the company owner, or any member of the accepted team.
+  const isOwner = project.ownerUserId === userId;
+  let isAcceptedTeamMember = false;
+  if (!isOwner && project.acceptedTeamId) {
+    const member = await db.query.teamMembers.findFirst({
+      where: and(eq(teamMembers.teamId, project.acceptedTeamId), eq(teamMembers.userId, userId)),
+    });
+    isAcceptedTeamMember = !!member;
+  }
+  if (!isOwner && !isAcceptedTeamMember) return null;
 
   const questions = await db
     .select()
