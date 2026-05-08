@@ -57,3 +57,5 @@ next-env.d.ts
 .playwright-mcp/
 audit-*.png
 phase*.png
+smoke-*.png
+verify-*.png
