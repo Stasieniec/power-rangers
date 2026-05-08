@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Container } from "@/components/shell/container";
 import { Button } from "@/components/ui/button";
-import { requireDbUser } from "@/lib/auth/current-user";
+import { requireDbUser, isDemoSession } from "@/lib/auth/current-user";
 import { getAlignmentDashboard } from "@/lib/db/queries/alignment-dashboard";
 import { QuestionProgress } from "./_components/question-progress";
 import { TranslationCard } from "./_components/translation-card";
@@ -17,6 +17,7 @@ export default async function AlignmentDashboardPage({
 
   const data = await getAlignmentDashboard(id, user.id);
   if (!data) notFound();
+  const inDemo = await isDemoSession();
 
   const questionMap = Object.fromEntries(
     data.questions.map((q) => [
@@ -89,14 +90,31 @@ export default async function AlignmentDashboardPage({
           )}
         </section>
 
-        {data.project.status === "in_progress" && data.project.acceptedTeamId && (
-          <section className="border-ink-3 mt-16 border-t pt-8">
-            <p className="text-text-dim text-sm">On the team? Submit this week&apos;s report.</p>
-            <Button asChild className="mt-4">
-              <Link href={`/projects/${id}/report`}>+ New weekly report</Link>
-            </Button>
-          </section>
-        )}
+        {data.project.status === "in_progress" &&
+          data.project.acceptedTeamId &&
+          (data.viewer.isAcceptedTeamMember ? (
+            <section className="border-ink-3 mt-16 border-t pt-8">
+              <p className="text-text-dim text-sm">Submit this week&apos;s report.</p>
+              <Button asChild className="mt-4">
+                <Link href={`/projects/${id}/report`}>+ New weekly report</Link>
+              </Button>
+            </section>
+          ) : (
+            inDemo && (
+              <section className="border-cyan/30 bg-cyan/5 mt-16 rounded-md border p-6">
+                <p className="text-cyan font-mono text-xs tracking-widest uppercase">
+                  Want to try report submission?
+                </p>
+                <p className="text-text-dim mt-2 text-sm">
+                  Reports come from the accepted team — switch to{" "}
+                  <Link href="/demo" className="text-cyan underline-offset-4 hover:underline">
+                    Eran Halperin
+                  </Link>{" "}
+                  on the demo door, then come back here to watch your translated findings appear.
+                </p>
+              </section>
+            )
+          ))}
       </Container>
     </main>
   );

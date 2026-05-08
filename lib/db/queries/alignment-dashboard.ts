@@ -32,7 +32,7 @@ export async function getAlignmentDashboard(projectId: string, userId: string) {
   // Visible to: the company owner, or any member of the accepted team.
   const isOwner = project.ownerUserId === userId;
   let isAcceptedTeamMember = false;
-  if (!isOwner && project.acceptedTeamId) {
+  if (project.acceptedTeamId) {
     const member = await db.query.teamMembers.findFirst({
       where: and(eq(teamMembers.teamId, project.acceptedTeamId), eq(teamMembers.userId, userId)),
     });
@@ -67,6 +67,7 @@ export async function getAlignmentDashboard(projectId: string, userId: string) {
 
   return {
     project,
+    viewer: { isOwner, isAcceptedTeamMember },
     questions: questions.map((q) => ({
       ...q,
       findingsCount: findingsByQuestion[q.id] ?? 0,
